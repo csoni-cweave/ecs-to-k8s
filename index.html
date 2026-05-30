@@ -31,7 +31,10 @@
     color: var(--text);
     line-height: 1.7;
     overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
   }
+
+  code, pre, .diagram, .map-left, .map-right { overflow-wrap: anywhere; }
 
   /* Hero */
   .hero {
@@ -55,6 +58,7 @@
     font-weight: 900;
     letter-spacing: -1px;
     background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent5));
+    background-clip: text;
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     margin-bottom: 12px;
   }
@@ -233,11 +237,48 @@
     grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
+    .nav { padding: 0 12px; }
+    .nav-inner { justify-content: flex-start; }
     .two-col { grid-template-columns: 1fr; }
-    .map-grid { grid-template-columns: 1fr; gap: 4px; }
-    .map-left { text-align: left; }
+    .flow-box { flex-basis: calc(50% - 6px); }
+  }
+
+  @media (max-width: 768px) {
+    .hero { padding: 56px 20px 42px; }
+    .hero::before { width: 520px; height: 520px; top: -160px; }
+    .hero p { font-size: 1rem; }
+    .container { padding: 28px 16px 72px; }
+    .section-title { font-size: clamp(1.55rem, 8vw, 2rem); }
+    .section-subtitle { margin-bottom: 24px; padding-bottom: 18px; }
+    .card, .quiz-q-card { padding: 20px; }
+    .card h3 { align-items: flex-start; flex-wrap: wrap; }
+    .map-grid { grid-template-columns: 1fr; gap: 6px; }
+    .map-left, .map-right { text-align: left; padding: 10px 12px; }
     .map-arrow { transform: rotate(90deg); }
+    pre, .diagram { padding: 14px; font-size: 0.75rem; }
+    .depth-header { gap: 12px; padding: 14px 16px; }
+    .depth-body { padding: 0 16px 16px; }
+    .quiz-progress { align-items: stretch; flex-direction: column; gap: 10px; }
+    .quiz-progress-text { white-space: normal; }
+    .quiz-score-summary { gap: 12px; }
+    .quiz-actions { flex-direction: column; }
+    .quiz-btn { width: 100%; }
+  }
+
+  @media (max-width: 480px) {
+    body { line-height: 1.6; }
+    .hero { padding: 44px 16px 34px; }
+    .hero h1 { font-size: clamp(1.9rem, 14vw, 2.4rem); }
+    .nav-btn { padding: 9px 11px; font-size: 0.72rem; }
+    .container { padding: 22px 12px 56px; }
+    .card, .quiz-q-card { border-radius: 10px; padding: 16px; }
+    .card p, .card li { font-size: 0.9rem; }
+    .flow-container { display: grid; grid-template-columns: 1fr; }
+    .flow-box { min-width: 0; }
+    .callout { padding: 14px 16px; }
+    .quiz-score-stat { min-width: 100%; padding: 18px; }
+    .quiz-option { padding: 12px 14px; }
   }
 
   /* Diagram */
