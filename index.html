@@ -1,0 +1,1923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kubernetes Landscape — From ECS to K8s</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2332;
+    --border: #1e293b;
+    --text: #e2e8f0;
+    --text-muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent2: #818cf8;
+    --accent3: #34d399;
+    --accent4: #fb923c;
+    --accent5: #f472b6;
+    --danger: #ef4444;
+    --code-bg: #0d1520;
+    --tag-bg: rgba(56, 189, 248, 0.1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Hero */
+  .hero {
+    position: relative;
+    padding: 80px 40px 60px;
+    text-align: center;
+    overflow: hidden;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(56,189,248,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: clamp(2.2rem, 5vw, 3.6rem);
+    font-weight: 900;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2), var(--accent5));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+  .hero p {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Navigation */
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(10, 14, 23, 0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-inner {
+    display: flex;
+    gap: 4px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 8px 0;
+    justify-content: center;
+  }
+  .nav-btn {
+    background: none; border: none; color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+    padding: 8px 14px; border-radius: 6px; cursor: pointer;
+    white-space: nowrap; transition: all 0.2s;
+  }
+  .nav-btn:hover { background: var(--surface); color: var(--text); }
+  .nav-btn.active { background: rgba(56,189,248,0.12); color: var(--accent); }
+
+  /* Main layout */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+  }
+
+  /* Sections */
+  .section { display: none; animation: fadeIn 0.3s ease; }
+  .section.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-family: 'Fraunces', serif;
+    font-size: 2rem; font-weight: 900;
+    margin-bottom: 8px;
+  }
+  .section-subtitle {
+    color: var(--text-muted);
+    font-size: 1rem;
+    margin-bottom: 36px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 24px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(56,189,248,0.3); }
+  .card h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .card h3 .icon { font-size: 1.3rem; }
+  .card p, .card li { color: var(--text-muted); font-size: 0.95rem; line-height: 1.8; }
+  .card p { margin-bottom: 12px; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* Mapping table */
+  .map-grid {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 12px 0;
+    align-items: center;
+    margin: 20px 0;
+  }
+  .map-left, .map-right {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 10px 16px;
+    border-radius: 8px;
+  }
+  .map-left {
+    background: rgba(251, 146, 60, 0.08);
+    border: 1px solid rgba(251, 146, 60, 0.2);
+    color: var(--accent4);
+    text-align: right;
+  }
+  .map-right {
+    background: rgba(56, 189, 248, 0.08);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    color: var(--accent);
+  }
+  .map-arrow { text-align: center; color: var(--text-muted); font-size: 1.1rem; }
+
+  /* Code blocks */
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin: 14px 0;
+  }
+  pre .comment { color: #475569; }
+  pre .keyword { color: var(--accent5); }
+  pre .string { color: var(--accent3); }
+  pre .key { color: var(--accent); }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin: 2px 4px 2px 0;
+  }
+  .tag-core { background: rgba(56,189,248,0.12); color: var(--accent); }
+  .tag-tool { background: rgba(129,140,248,0.12); color: var(--accent2); }
+  .tag-adv { background: rgba(244,114,182,0.12); color: var(--accent5); }
+  .tag-aws { background: rgba(251,146,60,0.12); color: var(--accent4); }
+
+  /* Concept depth toggles */
+  .depth-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin: 16px 0;
+    overflow: hidden;
+  }
+  .depth-header {
+    padding: 14px 20px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    color: var(--accent3);
+    transition: background 0.2s;
+  }
+  .depth-header:hover { background: rgba(52,211,153,0.05); }
+  .depth-header .arrow { transition: transform 0.2s; }
+  .depth-header.open .arrow { transform: rotate(90deg); }
+  .depth-body {
+    display: none;
+    padding: 0 20px 18px;
+    border-top: 1px solid var(--border);
+  }
+  .depth-body.open { display: block; padding-top: 16px; }
+
+  /* Two column layout */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 768px) {
+    .two-col { grid-template-columns: 1fr; }
+    .map-grid { grid-template-columns: 1fr; gap: 4px; }
+    .map-left { text-align: left; }
+    .map-arrow { transform: rotate(90deg); }
+  }
+
+  /* Diagram */
+  .diagram {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px;
+    margin: 20px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--text-muted);
+    overflow-x: auto;
+    white-space: pre;
+  }
+
+  .highlight { color: var(--accent); font-weight: 600; }
+  .highlight2 { color: var(--accent2); font-weight: 600; }
+  .highlight3 { color: var(--accent3); font-weight: 600; }
+  .highlight4 { color: var(--accent4); font-weight: 600; }
+
+  /* Flowchart-style boxes */
+  .flow-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 16px 0;
+    align-items: stretch;
+  }
+  .flow-box {
+    flex: 1;
+    min-width: 160px;
+    padding: 16px;
+    border-radius: 8px;
+    border: 1px solid;
+    font-size: 0.88rem;
+  }
+  .flow-box h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+  .flow-box p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
+  .flow-blue { border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.05); }
+  .flow-blue h4 { color: var(--accent); }
+  .flow-purple { border-color: rgba(129,140,248,0.3); background: rgba(129,140,248,0.05); }
+  .flow-purple h4 { color: var(--accent2); }
+  .flow-green { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.05); }
+  .flow-green h4 { color: var(--accent3); }
+  .flow-orange { border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.05); }
+  .flow-orange h4 { color: var(--accent4); }
+  .flow-pink { border-color: rgba(244,114,182,0.3); background: rgba(244,114,182,0.05); }
+  .flow-pink h4 { color: var(--accent5); }
+
+  .callout {
+    background: rgba(56,189,248,0.06);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  .callout-warn {
+    background: rgba(251,146,60,0.06);
+    border-left-color: var(--accent4);
+  }
+
+  /* Quiz styles */
+  .quiz-progress {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  .quiz-progress-bar {
+    flex: 1;
+    height: 8px;
+    background: var(--surface2);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .quiz-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent3));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+  }
+  .quiz-progress-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+  .quiz-score-summary {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .quiz-score-stat {
+    text-align: center;
+    padding: 20px 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    flex: 1;
+    min-width: 140px;
+  }
+  .quiz-score-stat .stat-num {
+    font-family: 'Fraunces', serif;
+    font-size: 2.4rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .quiz-score-stat .stat-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .quiz-q-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 20px;
+    transition: border-color 0.2s;
+  }
+  .quiz-q-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .quiz-q-category {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .quiz-q-text {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  .quiz-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.92rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    line-height: 1.6;
+  }
+  .quiz-option:hover:not(.locked) {
+    border-color: var(--accent);
+    color: var(--text);
+    background: rgba(56,189,248,0.05);
+  }
+  .quiz-option.selected {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(56,189,248,0.08);
+  }
+  .quiz-option.correct {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: rgba(52,211,153,0.1);
+  }
+  .quiz-option.incorrect {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: rgba(239,68,68,0.08);
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+  .quiz-option.reveal-correct {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: rgba(52,211,153,0.1);
+  }
+  .quiz-option.locked { cursor: default; }
+  .quiz-option .opt-letter {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    margin-right: 10px;
+  }
+  .quiz-explanation {
+    margin-top: 16px;
+    padding: 16px 18px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: var(--text-muted);
+    display: none;
+  }
+  .quiz-explanation.show { display: block; }
+  .quiz-explanation.is-correct {
+    background: rgba(52,211,153,0.06);
+    border-left: 3px solid var(--accent3);
+  }
+  .quiz-explanation.is-incorrect {
+    background: rgba(239,68,68,0.06);
+    border-left: 3px solid var(--danger);
+  }
+  .quiz-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+  }
+  .quiz-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .quiz-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .quiz-btn-primary {
+    background: rgba(56,189,248,0.12);
+    border-color: rgba(56,189,248,0.3);
+    color: var(--accent);
+  }
+  .quiz-btn-primary:hover {
+    background: rgba(56,189,248,0.2);
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>The Kubernetes Landscape</h1>
+  <p>A complete guide for engineers transitioning from AWS ECS to the Kubernetes ecosystem — from core primitives to advanced tooling.</p>
+</div>
+
+<nav class="nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showSection('mental-model')">Mental Model</button>
+    <button class="nav-btn" onclick="showSection('ecs-map')">ECS → K8s Map</button>
+    <button class="nav-btn" onclick="showSection('core')">Core Primitives</button>
+    <button class="nav-btn" onclick="showSection('workloads')">Workloads</button>
+    <button class="nav-btn" onclick="showSection('networking')">Networking</button>
+    <button class="nav-btn" onclick="showSection('storage')">Storage</button>
+    <button class="nav-btn" onclick="showSection('config')">Config &amp; Secrets</button>
+    <button class="nav-btn" onclick="showSection('kubectl')">kubectl</button>
+    <button class="nav-btn" onclick="showSection('helm')">Helm</button>
+    <button class="nav-btn" onclick="showSection('terraform')">Terraform</button>
+    <button class="nav-btn" onclick="showSection('operators')">Operators &amp; CRDs</button>
+    <button class="nav-btn" onclick="showSection('dev-tools')">Dev Tools</button>
+    <button class="nav-btn" onclick="showSection('advanced')">Advanced</button>
+    <button class="nav-btn" onclick="showSection('ecosystem')">Ecosystem Map</button>
+    <button class="nav-btn" onclick="showSection('quiz')" style="color:var(--accent3);">🧪 Quiz</button>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================ -->
+<!-- MENTAL MODEL -->
+<!-- ============================================================ -->
+<div id="mental-model" class="section active">
+  <h2 class="section-title">The Mental Model Shift</h2>
+  <p class="section-subtitle">What changes when you move from ECS to Kubernetes — and what stays the same.</p>
+
+  <div class="card">
+    <h3><span class="icon">🧠</span> The Big Idea</h3>
+    <p>In ECS, AWS gives you a managed control plane and you define <strong>Task Definitions</strong> and <strong>Services</strong>. The platform decides where things run and handles much of the networking and orchestration implicitly. Kubernetes is fundamentally the same idea — <em>declarative container orchestration</em> — but with every layer exposed, configurable, and extensible.</p>
+    <p>Think of Kubernetes as an <strong>operating system for your cluster</strong>. It provides primitives (processes, filesystems, networking) and lets you compose them. ECS gave you a curated subset of those primitives. K8s gives you all of them, plus the ability to define entirely new ones (via CRDs).</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🏗️</span> The Architecture at 30,000 Feet</h3>
+    <div class="diagram">┌─────────────────────────────────────────────────────────────┐
+│                      <span class="highlight">CONTROL PLANE</span>                         │
+│  ┌───────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐  │
+│  │ <span class="highlight2">API Server</span> │  │<span class="highlight2">Scheduler</span> │  │ <span class="highlight2">etcd</span>     │  │<span class="highlight2">Controller</span>│  │
+│  │           │  │          │  │ (state   │  │ <span class="highlight2">Manager</span>  │  │
+│  │ All comms │  │ Picks    │  │  store)  │  │ Runs      │  │
+│  │ go here   │  │ nodes    │  │          │  │ loops     │  │
+│  └───────────┘  └──────────┘  └──────────┘  └───────────┘  │
+└─────────────────────────────────────────────────────────────┘
+        │                  │                    │
+        ▼                  ▼                    ▼
+┌───────────────┐  ┌───────────────┐  ┌───────────────┐
+│   <span class="highlight3">Worker Node</span>   │  │   <span class="highlight3">Worker Node</span>   │  │   <span class="highlight3">Worker Node</span>   │
+│ ┌───────────┐ │  │ ┌───────────┐ │  │ ┌───────────┐ │
+│ │  <span class="highlight4">kubelet</span>   │ │  │ │  <span class="highlight4">kubelet</span>   │ │  │ │  <span class="highlight4">kubelet</span>   │ │
+│ │ (agent)   │ │  │ │ (agent)   │ │  │ │ (agent)   │ │
+│ ├───────────┤ │  │ ├───────────┤ │  │ ├───────────┤ │
+│ │ <span class="highlight4">kube-proxy</span>│ │  │ │ <span class="highlight4">kube-proxy</span>│ │  │ │ <span class="highlight4">kube-proxy</span>│ │
+│ │ (network) │ │  │ │ (network) │ │  │ │ (network) │ │
+│ ├───────────┤ │  │ ├───────────┤ │  │ ├───────────┤ │
+│ │<span class="highlight4">Container</span>  │ │  │ │<span class="highlight4">Container</span>  │ │  │ │<span class="highlight4">Container</span>  │ │
+│ │ <span class="highlight4">Runtime</span>   │ │  │ │ <span class="highlight4">Runtime</span>   │ │  │ │ <span class="highlight4">Runtime</span>   │ │
+│ └───────────┘ │  │ └───────────┘ │  │ └───────────┘ │
+│  [Pod][Pod]   │  │  [Pod][Pod]   │  │    [Pod]      │
+└───────────────┘  └───────────────┘  └───────────────┘</div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔄</span> The Reconciliation Loop — K8s's Core Idea</h3>
+    <p>Everything in Kubernetes works on one principle: you declare your <strong>desired state</strong> (a YAML manifest), the system observes the <strong>current state</strong>, and a <strong>controller</strong> continuously works to reconcile the two. This is the same pattern behind ECS service desired count, but in K8s it applies to <em>everything</em> — networking rules, storage mounts, DNS entries, certificates, custom business logic — anything a controller can watch and act on.</p>
+    <p>You'll hear this called the "control loop" or "reconciliation loop." It's the beating heart of K8s. When you later learn about Operators and CRDs, you're really just learning how to write your own reconciliation loops for custom resource types.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">⚡</span> Key Mindset Shifts</h3>
+    <p><strong>Everything is a resource with an API.</strong> In ECS, you work with a fixed set of AWS constructs. In K8s, every concept — a pod, a network policy, a role binding — is a typed resource with a versioned API, stored in etcd, and manageable through kubectl. This uniform interface is powerful.</p>
+    <p><strong>YAML is your language.</strong> You'll write manifests for everything. They follow a consistent structure: <code>apiVersion</code>, <code>kind</code>, <code>metadata</code>, <code>spec</code>. Get comfortable reading and writing these — they're the source of truth.</p>
+    <p><strong>Namespaces replace accounts.</strong> Where you might use separate AWS accounts for isolation, K8s uses namespaces within a cluster (plus RBAC) for multi-tenancy and logical separation.</p>
+    <p><strong>You own more of the stack.</strong> ECS manages load balancer integration, service discovery, and IAM tightly. In K8s, you configure Ingress controllers, Service meshes, and RBAC explicitly. More power, more responsibility.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ECS MAP -->
+<!-- ============================================================ -->
+<div id="ecs-map" class="section">
+  <h2 class="section-title">ECS → Kubernetes Mapping</h2>
+  <p class="section-subtitle">Direct conceptual translations from what you know to what you're learning.</p>
+
+  <div class="card">
+    <h3><span class="icon">🗺️</span> Concept Mapping</h3>
+    <div class="map-grid">
+      <div class="map-left">ECS Cluster</div><div class="map-arrow">→</div><div class="map-right">K8s Cluster (control plane + nodes)</div>
+      <div class="map-left">EC2 Instance (in ECS)</div><div class="map-arrow">→</div><div class="map-right">Node</div>
+      <div class="map-left">Fargate</div><div class="map-arrow">→</div><div class="map-right">Virtual Kubelet / Fargate on EKS / serverless runtimes</div>
+      <div class="map-left">Task Definition</div><div class="map-arrow">→</div><div class="map-right">Pod spec (within a Deployment/Job manifest)</div>
+      <div class="map-left">Task</div><div class="map-arrow">→</div><div class="map-right">Pod</div>
+      <div class="map-left">Container Definition</div><div class="map-arrow">→</div><div class="map-right">Container spec (inside a Pod)</div>
+      <div class="map-left">ECS Service</div><div class="map-arrow">→</div><div class="map-right">Deployment + Service</div>
+      <div class="map-left">Service desired count</div><div class="map-arrow">→</div><div class="map-right">replicas: N in Deployment spec</div>
+      <div class="map-left">Task Role (IAM)</div><div class="map-arrow">→</div><div class="map-right">ServiceAccount + RBAC (or IRSA on EKS)</div>
+      <div class="map-left">ALB / Target Group</div><div class="map-arrow">→</div><div class="map-right">Service (type: LoadBalancer) + Ingress</div>
+      <div class="map-left">ECS Service Discovery</div><div class="map-arrow">→</div><div class="map-right">CoreDNS (built-in) — every Service gets a DNS name</div>
+      <div class="map-left">Parameter Store / Secrets Manager</div><div class="map-arrow">→</div><div class="map-right">ConfigMap + Secret (or External Secrets Operator)</div>
+      <div class="map-left">CloudWatch Logs</div><div class="map-arrow">→</div><div class="map-right">kubectl logs + log aggregation (Fluentd/Loki/etc)</div>
+      <div class="map-left">ECS Auto Scaling</div><div class="map-arrow">→</div><div class="map-right">HorizontalPodAutoscaler + Cluster Autoscaler / Karpenter</div>
+      <div class="map-left">ECR</div><div class="map-arrow">→</div><div class="map-right">Any container registry (ECR, GCR, Docker Hub, Harbor)</div>
+      <div class="map-left">CloudFormation / CDK</div><div class="map-arrow">→</div><div class="map-right">Terraform / Pulumi (for infra) + Helm/Kustomize (for K8s resources)</div>
+      <div class="map-left">aws ecs CLI</div><div class="map-arrow">→</div><div class="map-right">kubectl</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Key nuance:</strong> In ECS, a "Service" is the thing that keeps N tasks running. In K8s, that concept is split into two: a <strong>Deployment</strong> (manages the pods/replicas) and a <strong>Service</strong> (provides stable networking to reach those pods). This separation is intentional — it decouples lifecycle management from network identity.
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">⚠️</span> Concepts That Don't Map Cleanly</h3>
+    <p><strong>Namespaces:</strong> ECS doesn't have a direct equivalent. Namespaces are logical partitions within a cluster — think of them like lightweight AWS accounts. They scope resource names and enable RBAC isolation. Most teams use namespaces per-environment or per-team.</p>
+    <p><strong>Labels &amp; Selectors:</strong> K8s uses key-value labels on every resource, and selectors to query them. This is how Services find Pods, how Deployments manage ReplicaSets, and how you organize everything. ECS tags are similar but far less central to the system.</p>
+    <p><strong>DaemonSets:</strong> Runs exactly one Pod per node. There's no ECS equivalent — this is used for node-level agents like log collectors, monitoring agents, or CNI plugins.</p>
+    <p><strong>StatefulSets:</strong> For stateful workloads needing stable identity, ordered deployment, and persistent storage. ECS can do persistent storage with EBS, but doesn't provide the same identity guarantees.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CORE PRIMITIVES -->
+<!-- ============================================================ -->
+<div id="core" class="section">
+  <h2 class="section-title">Core Primitives</h2>
+  <p class="section-subtitle">The fundamental building blocks everything else is built on.</p>
+
+  <div class="card">
+    <h3><span class="icon">🖥️</span> Nodes <span class="tag tag-core">core</span></h3>
+    <p>A Node is a machine (VM or bare metal) in your cluster that runs workloads. Each node runs three things: the <strong>kubelet</strong> (an agent that receives instructions from the API server and manages pods), <strong>kube-proxy</strong> (handles network rules so pods can communicate), and a <strong>container runtime</strong> (usually containerd — Docker is deprecated as a runtime).</p>
+    <p>Nodes have allocatable resources (CPU, memory, ephemeral storage) and can be labeled and tainted to control scheduling. For example, you might label GPU nodes and use a nodeSelector to schedule ML workloads there.</p>
+    <div class="depth-toggle">
+      <div class="depth-header" onclick="toggleDepth(this)">
+        <span>↳ Deep dive: Node lifecycle &amp; management</span>
+        <span class="arrow">▸</span>
+      </div>
+      <div class="depth-body">
+        <p>Nodes register themselves with the control plane. The kubelet sends heartbeats; if it stops, the node is marked <code>NotReady</code> and pods are eventually evicted (after the <code>pod-eviction-timeout</code>, default 5 minutes). You can <code>cordon</code> a node (prevent new scheduling) and <code>drain</code> it (evict all pods gracefully) for maintenance.</p>
+        <p><strong>Taints and Tolerations</strong> are the counterpart to labels/selectors for node scheduling. A taint says "don't schedule here unless you tolerate this." This is how you reserve GPU nodes, keep master nodes free of workloads, or handle spot/preemptible instances.</p>
+<pre># Taint a node
+kubectl taint nodes gpu-node-1 gpu=true:NoSchedule
+
+# Pod must tolerate it to be scheduled there
+tolerations:
+- key: "gpu"
+  operator: "Equal"
+  value: "true"
+  effect: "NoSchedule"</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🫛</span> Pods <span class="tag tag-core">core</span></h3>
+    <p>A Pod is the smallest deployable unit — it's one or more containers that share a network namespace (same IP, same localhost) and can share volumes. Think of it as the K8s equivalent of an ECS Task, though typically simpler since most pods have just one container.</p>
+    <p>Pods are <strong>ephemeral by design</strong>. They can be killed, restarted, or rescheduled at any time. You should never create Pods directly in production — instead, you create a Deployment (or StatefulSet, DaemonSet, Job) which creates Pods for you and handles their lifecycle.</p>
+
+    <div class="depth-toggle">
+      <div class="depth-header" onclick="toggleDepth(this)">
+        <span>↳ Deep dive: Pod internals and multi-container patterns</span>
+        <span class="arrow">▸</span>
+      </div>
+      <div class="depth-body">
+        <p>Every pod gets its own IP address in the cluster. Containers within a pod communicate via localhost. This enables powerful multi-container patterns:</p>
+        <p><strong>Sidecar:</strong> A helper container alongside your main container. Classic examples: Envoy proxy for service mesh, a log shipping agent, or a secrets-refreshing sidecar. (K8s 1.28+ added native sidecar container support via <code>restartPolicy: Always</code> in init containers.)</p>
+        <p><strong>Init Container:</strong> Runs to completion before the main containers start. Use for setup: database migrations, waiting for dependencies, populating shared volumes.</p>
+        <p><strong>Ambassador:</strong> A proxy container that simplifies external access patterns for the main container.</p>
+<pre><span class="key">apiVersion:</span> <span class="string">v1</span>
+<span class="key">kind:</span> <span class="string">Pod</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="string">my-app</span>
+  <span class="key">labels:</span>
+    <span class="key">app:</span> <span class="string">web</span>         <span class="comment"># ← labels are how Services find this pod</span>
+<span class="key">spec:</span>
+  <span class="key">initContainers:</span>      <span class="comment"># ← runs before main containers</span>
+  - <span class="key">name:</span> <span class="string">db-migrate</span>
+    <span class="key">image:</span> <span class="string">my-app:latest</span>
+    <span class="key">command:</span> [<span class="string">"./migrate.sh"</span>]
+  <span class="key">containers:</span>
+  - <span class="key">name:</span> <span class="string">app</span>
+    <span class="key">image:</span> <span class="string">my-app:latest</span>
+    <span class="key">ports:</span>
+    - <span class="key">containerPort:</span> <span class="string">8080</span>
+    <span class="key">resources:</span>           <span class="comment"># ← always set these in production</span>
+      <span class="key">requests:</span>
+        <span class="key">cpu:</span> <span class="string">"250m"</span>       <span class="comment"># 0.25 CPU cores</span>
+        <span class="key">memory:</span> <span class="string">"256Mi"</span>
+      <span class="key">limits:</span>
+        <span class="key">cpu:</span> <span class="string">"500m"</span>
+        <span class="key">memory:</span> <span class="string">"512Mi"</span>
+    <span class="key">livenessProbe:</span>       <span class="comment"># ← restarts container if it fails</span>
+      <span class="key">httpGet:</span>
+        <span class="key">path:</span> <span class="string">/healthz</span>
+        <span class="key">port:</span> <span class="string">8080</span>
+    <span class="key">readinessProbe:</span>      <span class="comment"># ← removes from Service endpoints if it fails</span>
+      <span class="key">httpGet:</span>
+        <span class="key">path:</span> <span class="string">/ready</span>
+        <span class="key">port:</span> <span class="string">8080</span>
+  - <span class="key">name:</span> <span class="string">log-shipper</span>    <span class="comment"># ← sidecar container</span>
+    <span class="key">image:</span> <span class="string">fluentbit:latest</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📦</span> Namespaces <span class="tag tag-core">core</span></h3>
+    <p>Namespaces are virtual clusters within a physical cluster. They scope resource names (you can have a pod called "api" in both <code>staging</code> and <code>production</code> namespaces) and are the primary unit for RBAC, resource quotas, and network policies.</p>
+    <p>Default namespaces: <code>default</code> (where things go if you don't specify), <code>kube-system</code> (control plane components), <code>kube-public</code> (publicly readable), <code>kube-node-lease</code> (node heartbeats).</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🏷️</span> Labels, Selectors &amp; Annotations <span class="tag tag-core">core</span></h3>
+    <p><strong>Labels</strong> are key-value pairs attached to resources. They're the connective tissue of K8s — Services find Pods via label selectors, Deployments manage ReplicaSets through them, NetworkPolicies target pods by label. Think of labels as queryable tags that drive system behavior.</p>
+    <p><strong>Annotations</strong> are also key-value pairs, but they're for metadata that doesn't drive selection — build info, config for tools like Ingress controllers, links to docs, etc.</p>
+<pre><span class="comment"># Labels drive behavior</span>
+<span class="key">labels:</span>
+  <span class="key">app:</span> <span class="string">payment-service</span>
+  <span class="key">env:</span> <span class="string">production</span>
+  <span class="key">team:</span> <span class="string">billing</span>
+
+<span class="comment"># Annotations are informational</span>
+<span class="key">annotations:</span>
+  <span class="key">prometheus.io/scrape:</span> <span class="string">"true"</span>
+  <span class="key">deploy.link:</span> <span class="string">"https://ci.example.com/builds/421"</span></pre>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- WORKLOADS -->
+<!-- ============================================================ -->
+<div id="workloads" class="section">
+  <h2 class="section-title">Workload Resources</h2>
+  <p class="section-subtitle">The controllers that manage your Pods' lifecycles.</p>
+
+  <div class="flow-container">
+    <div class="flow-box flow-blue">
+      <h4>Deployment</h4>
+      <p>Stateless apps. Rolling updates. Most common workload. Your ECS Service equivalent.</p>
+    </div>
+    <div class="flow-box flow-purple">
+      <h4>StatefulSet</h4>
+      <p>Ordered, stable identity. Persistent volumes. For databases, Kafka, Zookeeper.</p>
+    </div>
+    <div class="flow-box flow-green">
+      <h4>DaemonSet</h4>
+      <p>One pod per node. For node agents: log collectors, monitoring, CNI plugins.</p>
+    </div>
+    <div class="flow-box flow-orange">
+      <h4>Job / CronJob</h4>
+      <p>Run-to-completion tasks. Batch processing. Scheduled work. Like ECS RunTask.</p>
+    </div>
+    <div class="flow-box flow-pink">
+      <h4>ReplicaSet</h4>
+      <p>Ensures N pod replicas. Usually managed by Deployment — you rarely create these directly.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🚀</span> Deployments — Your Daily Driver</h3>
+    <p>A Deployment is what you'll use for 90% of your workloads. It manages a ReplicaSet which manages Pods. When you update the Deployment (new image, env change), it creates a new ReplicaSet and progressively shifts traffic, giving you zero-downtime rolling updates — the same thing an ECS service deployment does, but with more fine-grained control.</p>
+<pre><span class="key">apiVersion:</span> <span class="string">apps/v1</span>
+<span class="key">kind:</span> <span class="string">Deployment</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="string">api-server</span>
+  <span class="key">namespace:</span> <span class="string">production</span>
+<span class="key">spec:</span>
+  <span class="key">replicas:</span> <span class="string">3</span>                <span class="comment"># ← like ECS desired count</span>
+  <span class="key">strategy:</span>
+    <span class="key">type:</span> <span class="string">RollingUpdate</span>
+    <span class="key">rollingUpdate:</span>
+      <span class="key">maxSurge:</span> <span class="string">1</span>            <span class="comment"># ← max pods over desired during deploy</span>
+      <span class="key">maxUnavailable:</span> <span class="string">0</span>     <span class="comment"># ← zero downtime — always have 3 ready</span>
+  <span class="key">selector:</span>
+    <span class="key">matchLabels:</span>
+      <span class="key">app:</span> <span class="string">api-server</span>      <span class="comment"># ← must match template labels</span>
+  <span class="key">template:</span>                    <span class="comment"># ← this IS the pod spec</span>
+    <span class="key">metadata:</span>
+      <span class="key">labels:</span>
+        <span class="key">app:</span> <span class="string">api-server</span>
+    <span class="key">spec:</span>
+      <span class="key">containers:</span>
+      - <span class="key">name:</span> <span class="string">api</span>
+        <span class="key">image:</span> <span class="string">myregistry/api:v2.3.1</span>
+        <span class="key">ports:</span>
+        - <span class="key">containerPort:</span> <span class="string">8080</span></pre>
+
+    <div class="depth-toggle">
+      <div class="depth-header" onclick="toggleDepth(this)">
+        <span>↳ Deep dive: Deployment strategies &amp; rollbacks</span>
+        <span class="arrow">▸</span>
+      </div>
+      <div class="depth-body">
+        <p>K8s natively supports <strong>RollingUpdate</strong> (gradual) and <strong>Recreate</strong> (kill all, then create all). For canary or blue-green deployments, you typically use service meshes (Istio, Linkerd) or progressive delivery tools (Argo Rollouts, Flagger) that layer on top of Deployments.</p>
+        <p>Every Deployment change is recorded. You can rollback instantly:</p>
+<pre>kubectl rollout history deployment/api-server
+kubectl rollout undo deployment/api-server           <span class="comment"># previous version</span>
+kubectl rollout undo deployment/api-server --to-revision=3  <span class="comment"># specific version</span>
+kubectl rollout status deployment/api-server          <span class="comment"># watch progress</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📊</span> StatefulSets</h3>
+    <p>StatefulSets provide guarantees Deployments don't: stable, unique network identifiers (pods are named <code>web-0</code>, <code>web-1</code>, etc., not random hashes), ordered deployment and scaling, and stable persistent storage that follows the pod identity even through rescheduling.</p>
+    <p>You'd use a StatefulSet for databases, distributed systems like Kafka or Elasticsearch, or anything needing persistent identity. Each pod gets its own PersistentVolumeClaim that sticks with it.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">⏱️</span> Jobs &amp; CronJobs</h3>
+    <p>A <strong>Job</strong> creates pods that run to completion — like an ECS <code>RunTask</code>. It tracks success/failure and supports parallelism. A <strong>CronJob</strong> creates Jobs on a schedule (cron syntax). Common uses: database backups, report generation, data pipeline triggers.</p>
+<pre><span class="key">apiVersion:</span> <span class="string">batch/v1</span>
+<span class="key">kind:</span> <span class="string">CronJob</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="string">nightly-backup</span>
+<span class="key">spec:</span>
+  <span class="key">schedule:</span> <span class="string">"0 2 * * *"</span>      <span class="comment"># ← 2 AM daily</span>
+  <span class="key">jobTemplate:</span>
+    <span class="key">spec:</span>
+      <span class="key">template:</span>
+        <span class="key">spec:</span>
+          <span class="key">containers:</span>
+          - <span class="key">name:</span> <span class="string">backup</span>
+            <span class="key">image:</span> <span class="string">backup-tool:latest</span>
+          <span class="key">restartPolicy:</span> <span class="string">OnFailure</span></pre>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- NETWORKING -->
+<!-- ============================================================ -->
+<div id="networking" class="section">
+  <h2 class="section-title">Networking</h2>
+  <p class="section-subtitle">How traffic flows in a K8s cluster — this is where ECS and K8s differ most.</p>
+
+  <div class="card">
+    <h3><span class="icon">🌐</span> The K8s Networking Model</h3>
+    <p>K8s enforces a flat network model: every Pod gets its own IP, every Pod can reach every other Pod directly (no NAT), and nodes can reach all pods. This is implemented by a <strong>CNI (Container Network Interface) plugin</strong> — Calico, Cilium, Flannel, etc. The CNI is a choice you make (or your managed K8s provider makes).</p>
+    <p>In ECS on EC2, you dealt with awsvpc mode and ENIs. In K8s, the CNI plugin handles all this transparently — you just use Pod IPs.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔗</span> Services — Stable Networking to Pods</h3>
+    <p>Pods are ephemeral — their IPs change. A <strong>Service</strong> provides a stable virtual IP (ClusterIP) and DNS name that routes to a set of pods matched by label selectors. This is like an internal ECS service discovery endpoint, but it's built in and automatic.</p>
+
+    <div class="flow-container">
+      <div class="flow-box flow-blue">
+        <h4>ClusterIP (default)</h4>
+        <p>Internal only. Reachable within the cluster. Most common type.</p>
+      </div>
+      <div class="flow-box flow-purple">
+        <h4>NodePort</h4>
+        <p>Exposes a port on every node. Rarely used directly — but underlies LoadBalancer type.</p>
+      </div>
+      <div class="flow-box flow-green">
+        <h4>LoadBalancer</h4>
+        <p>Provisions a cloud load balancer (ALB/NLB on AWS). Your ECS ALB equivalent.</p>
+      </div>
+      <div class="flow-box flow-orange">
+        <h4>ExternalName</h4>
+        <p>Maps to an external DNS name. A CNAME alias into the cluster's DNS.</p>
+      </div>
+    </div>
+<pre><span class="key">apiVersion:</span> <span class="string">v1</span>
+<span class="key">kind:</span> <span class="string">Service</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="string">api-server</span>        <span class="comment"># ← becomes dns: api-server.production.svc.cluster.local</span>
+  <span class="key">namespace:</span> <span class="string">production</span>
+<span class="key">spec:</span>
+  <span class="key">selector:</span>
+    <span class="key">app:</span> <span class="string">api-server</span>        <span class="comment"># ← routes to pods with this label</span>
+  <span class="key">ports:</span>
+  - <span class="key">port:</span> <span class="string">80</span>                <span class="comment"># ← port the Service listens on</span>
+    <span class="key">targetPort:</span> <span class="string">8080</span>        <span class="comment"># ← port on the pod</span></pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🚪</span> Ingress &amp; Ingress Controllers</h3>
+    <p>An <strong>Ingress</strong> is a resource that defines HTTP(S) routing rules — host-based and path-based routing to Services. But it doesn't do anything by itself; you need an <strong>Ingress Controller</strong> (a running pod) to implement it. Popular choices: NGINX Ingress Controller, Traefik, HAProxy, AWS ALB Ingress Controller, Envoy/Emissary.</p>
+    <p>Think of Ingress as the K8s equivalent of ALB listener rules. The newer <strong>Gateway API</strong> (graduating to GA) is replacing Ingress with a more expressive, role-oriented model — worth learning early since it's the future.</p>
+<pre><span class="key">apiVersion:</span> <span class="string">networking.k8s.io/v1</span>
+<span class="key">kind:</span> <span class="string">Ingress</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="string">api-ingress</span>
+  <span class="key">annotations:</span>
+    <span class="key">nginx.ingress.kubernetes.io/rewrite-target:</span> <span class="string">/</span>
+<span class="key">spec:</span>
+  <span class="key">ingressClassName:</span> <span class="string">nginx</span>
+  <span class="key">rules:</span>
+  - <span class="key">host:</span> <span class="string">api.example.com</span>
+    <span class="key">http:</span>
+      <span class="key">paths:</span>
+      - <span class="key">path:</span> <span class="string">/v1</span>
+        <span class="key">pathType:</span> <span class="string">Prefix</span>
+        <span class="key">backend:</span>
+          <span class="key">service:</span>
+            <span class="key">name:</span> <span class="string">api-server</span>
+            <span class="key">port:</span>
+              <span class="key">number:</span> <span class="string">80</span></pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛡️</span> NetworkPolicies</h3>
+    <p>By default, all pods can talk to all pods. NetworkPolicies are firewall rules for pod-to-pod traffic, implemented by your CNI plugin. They're the K8s equivalent of security groups, but at the pod level rather than the instance level.</p>
+    <p>If your CNI supports them (Calico and Cilium do, Flannel doesn't), you can restrict which pods can communicate with each other, implementing zero-trust networking within the cluster.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🕸️</span> Service Mesh (Istio, Linkerd, Cilium)</h3>
+    <p>A service mesh adds a proxy sidecar (usually Envoy) to every pod, giving you mTLS (encrypted pod-to-pod communication), fine-grained traffic routing (canary deploys, A/B testing), observability (distributed tracing, metrics per-request), and circuit breaking. It's like having an ALB between every pair of services.</p>
+    <p><strong>Istio</strong> is feature-rich but complex. <strong>Linkerd</strong> is lighter and simpler. <strong>Cilium</strong> does mesh at the eBPF/kernel level without sidecars. At a core K8s infra shop, you'll almost certainly encounter one of these.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- STORAGE -->
+<!-- ============================================================ -->
+<div id="storage" class="section">
+  <h2 class="section-title">Storage</h2>
+  <p class="section-subtitle">Persistent and ephemeral storage for stateful workloads.</p>
+
+  <div class="card">
+    <h3><span class="icon">💾</span> The Storage Stack</h3>
+    <p>K8s storage has three layers, and understanding how they connect is important:</p>
+    <div class="flow-container">
+      <div class="flow-box flow-blue">
+        <h4>PersistentVolume (PV)</h4>
+        <p>A piece of storage in the cluster — like an EBS volume. Can be pre-provisioned or dynamic.</p>
+      </div>
+      <div class="flow-box flow-purple">
+        <h4>PersistentVolumeClaim (PVC)</h4>
+        <p>A request for storage by a pod. "I need 10Gi of SSD." K8s binds it to a matching PV.</p>
+      </div>
+      <div class="flow-box flow-green">
+        <h4>StorageClass</h4>
+        <p>Defines how to dynamically provision PVs. Like choosing gp3 vs io2 in AWS.</p>
+      </div>
+    </div>
+    <p>In practice, you usually define a StorageClass (or use the default one your cloud provides), then create PVCs in your pod specs. The StorageClass's provisioner automatically creates the underlying PV (e.g., an EBS volume on AWS, a PD on GCP). This is called <strong>dynamic provisioning</strong>, and it's what you'll use 99% of the time.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📁</span> Volume Types You'll Encounter</h3>
+    <p><strong>emptyDir:</strong> Ephemeral, per-pod scratch space. Exists as long as the pod exists — for temp files, caches, inter-container communication within a pod.</p>
+    <p><strong>hostPath:</strong> Mounts a directory from the host node. Use sparingly — breaks portability. Mainly for DaemonSets that need to read node-level files (logs, docker socket).</p>
+    <p><strong>CSI (Container Storage Interface):</strong> The plugin standard for storage. AWS EBS CSI Driver, EFS CSI Driver, etc. — these are what let K8s provision cloud storage dynamically.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- CONFIG & SECRETS -->
+<!-- ============================================================ -->
+<div id="config" class="section">
+  <h2 class="section-title">Config &amp; Secrets</h2>
+  <p class="section-subtitle">How K8s handles configuration, environment variables, and sensitive data.</p>
+
+  <div class="card">
+    <h3><span class="icon">⚙️</span> ConfigMaps</h3>
+    <p>ConfigMaps store non-sensitive key-value data or entire config files. You can mount them as environment variables or as files in a volume. This replaces things like SSM Parameter Store for non-secret config.</p>
+<pre><span class="key">apiVersion:</span> <span class="string">v1</span>
+<span class="key">kind:</span> <span class="string">ConfigMap</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="string">app-config</span>
+<span class="key">data:</span>
+  <span class="key">DATABASE_HOST:</span> <span class="string">"db.internal.svc.cluster.local"</span>
+  <span class="key">LOG_LEVEL:</span> <span class="string">"info"</span>
+  <span class="key">nginx.conf:</span> |        <span class="comment"># ← you can store entire files</span>
+    server {
+      listen 80;
+      location / { proxy_pass http://app:8080; }
+    }</pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔐</span> Secrets</h3>
+    <p>Secrets are like ConfigMaps but for sensitive data (passwords, tokens, TLS certs). They're base64-encoded (not encrypted!) at rest by default. For real security, enable <strong>encryption at rest</strong> in etcd or use an external secrets solution.</p>
+    <p>In production at a core K8s shop, you'll likely use the <strong>External Secrets Operator</strong> to sync secrets from Vault, AWS Secrets Manager, GCP Secret Manager, or Azure Key Vault into K8s Secrets — giving you the best of both worlds.</p>
+    <div class="callout callout-warn">
+      <strong>Critical gotcha:</strong> K8s Secrets are only base64-encoded, not encrypted. Anyone with RBAC access to read Secrets in a namespace can decode them trivially. This is why external secrets management (Vault, cloud KMS) is standard practice in production.
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- KUBECTL -->
+<!-- ============================================================ -->
+<div id="kubectl" class="section">
+  <h2 class="section-title">kubectl — Your Primary Tool</h2>
+  <p class="section-subtitle">The CLI that talks to the K8s API server. Your equivalent of the aws ecs CLI, but for everything.</p>
+
+  <div class="card">
+    <h3><span class="icon">⌨️</span> Essential Commands</h3>
+<pre><span class="comment"># ── Context & Cluster ──────────────────────────────────</span>
+kubectl config get-contexts              <span class="comment"># list clusters</span>
+kubectl config use-context prod-cluster  <span class="comment"># switch cluster</span>
+kubectl config set-context --current --namespace=staging  <span class="comment"># set default ns</span>
+
+<span class="comment"># ── Viewing Resources ─────────────────────────────────</span>
+kubectl get pods                         <span class="comment"># list pods in current ns</span>
+kubectl get pods -A                      <span class="comment"># all namespaces</span>
+kubectl get pods -o wide                 <span class="comment"># more detail (node, IP)</span>
+kubectl get deploy,svc,ing               <span class="comment"># multiple resource types</span>
+kubectl describe pod my-pod              <span class="comment"># detailed info + events</span>
+kubectl get pod my-pod -o yaml           <span class="comment"># full manifest</span>
+
+<span class="comment"># ── Debugging ─────────────────────────────────────────</span>
+kubectl logs my-pod                      <span class="comment"># stdout logs</span>
+kubectl logs my-pod -c sidecar           <span class="comment"># specific container</span>
+kubectl logs -f my-pod                   <span class="comment"># follow/tail</span>
+kubectl logs -l app=api --all-containers <span class="comment"># by label selector</span>
+kubectl exec -it my-pod -- /bin/sh       <span class="comment"># shell into pod</span>
+kubectl port-forward svc/api 8080:80     <span class="comment"># tunnel to your laptop</span>
+kubectl top pods                         <span class="comment"># resource usage</span>
+
+<span class="comment"># ── Creating & Modifying ──────────────────────────────</span>
+kubectl apply -f manifest.yaml           <span class="comment"># create or update</span>
+kubectl apply -f ./k8s/                  <span class="comment"># apply whole directory</span>
+kubectl delete -f manifest.yaml          <span class="comment"># delete resources</span>
+kubectl scale deploy/api --replicas=5    <span class="comment"># manual scale</span>
+kubectl edit deploy/api                  <span class="comment"># open in editor</span>
+
+<span class="comment"># ── Dry Runs & Diff ───────────────────────────────────</span>
+kubectl apply -f m.yaml --dry-run=server <span class="comment"># server-side dry run</span>
+kubectl diff -f manifest.yaml            <span class="comment"># show what would change</span></pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛠️</span> Power User Tips</h3>
+    <p><strong>Aliases:</strong> Most K8s engineers alias <code>kubectl</code> to <code>k</code>. Set up shell completion — it's a massive time saver.</p>
+    <p><strong>kubectx + kubens:</strong> Tools to switch clusters and namespaces fast. Essential when you're managing multiple clusters.</p>
+    <p><strong>kubectl debug:</strong> K8s 1.23+ lets you attach ephemeral debug containers to running pods — invaluable when a pod has no shell (distroless images).</p>
+    <p><strong>krew:</strong> A plugin manager for kubectl. Gives you access to hundreds of community plugins like <code>kubectl neat</code> (clean up YAML output), <code>kubectl tree</code> (resource hierarchy), and <code>kubectl sniff</code> (tcpdump on pods).</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📋</span> kubeconfig Explained</h3>
+    <p>Your kubeconfig file (<code>~/.kube/config</code>) stores cluster connection details: server addresses, authentication credentials, and contexts (a named combo of cluster + user + namespace). When you run <code>aws eks update-kubeconfig</code>, it adds the EKS cluster to this file. You can have dozens of clusters configured and switch between them with <code>kubectl config use-context</code>.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- HELM -->
+<!-- ============================================================ -->
+<div id="helm" class="section">
+  <h2 class="section-title">Helm — The Package Manager</h2>
+  <p class="section-subtitle">Think of Helm as "apt/yum for Kubernetes" — it packages, templates, and manages K8s manifests.</p>
+
+  <div class="card">
+    <h3><span class="icon">⎈</span> What Helm Does</h3>
+    <p>Raw K8s manifests are static YAML. Helm solves three problems: <strong>templating</strong> (parameterize your YAML so the same chart works in dev and prod), <strong>packaging</strong> (bundle all the manifests for an app into a versioned "chart"), and <strong>release management</strong> (track what's deployed, rollback to previous versions).</p>
+    <p>A Helm <strong>Chart</strong> is a directory containing templates, a values.yaml for defaults, and metadata. A <strong>Release</strong> is an instance of a chart deployed to a cluster. You can deploy the same chart multiple times with different values.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📂</span> Chart Structure</h3>
+<pre>my-app-chart/
+├── Chart.yaml            <span class="comment"># name, version, dependencies</span>
+├── values.yaml           <span class="comment"># default configuration values</span>
+├── templates/
+│   ├── deployment.yaml   <span class="comment"># Go templates referencing {{ .Values.* }}</span>
+│   ├── service.yaml
+│   ├── ingress.yaml
+│   ├── configmap.yaml
+│   ├── _helpers.tpl      <span class="comment"># reusable template snippets</span>
+│   └── NOTES.txt         <span class="comment"># post-install message</span>
+└── charts/               <span class="comment"># sub-chart dependencies</span></pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">💻</span> Key Commands</h3>
+<pre><span class="comment"># ── Install & Upgrade ─────────────────────────────────</span>
+helm install my-release ./my-app-chart            <span class="comment"># install from local chart</span>
+helm install my-release bitnami/postgresql         <span class="comment"># from a chart repo</span>
+helm upgrade my-release ./my-app-chart            <span class="comment"># upgrade with new values</span>
+helm upgrade --install my-release ./my-app-chart  <span class="comment"># install or upgrade</span>
+
+<span class="comment"># ── Values ────────────────────────────────────────────</span>
+helm install my-release ./chart -f prod-values.yaml  <span class="comment"># override defaults</span>
+helm install my-release ./chart --set replicas=5     <span class="comment"># inline override</span>
+
+<span class="comment"># ── Inspect & Debug ───────────────────────────────────</span>
+helm template ./my-app-chart                      <span class="comment"># render templates locally</span>
+helm get values my-release                        <span class="comment"># see deployed values</span>
+helm history my-release                           <span class="comment"># release history</span>
+helm rollback my-release 2                        <span class="comment"># rollback to revision 2</span>
+
+<span class="comment"># ── Repos ─────────────────────────────────────────────</span>
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm search repo postgresql</pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔄</span> Helm vs. Kustomize</h3>
+    <p><strong>Helm</strong> uses Go templating — powerful but can produce complex, hard-to-read templates. Best for packaging reusable charts (community or internal) and managing complex apps with many config variants.</p>
+    <p><strong>Kustomize</strong> (built into kubectl as <code>kubectl apply -k</code>) uses a template-free overlay approach — you start with base manifests and layer on patches for each environment. No templating language, just structured YAML overlays. Many teams use Kustomize for simple internal apps and Helm for third-party software.</p>
+    <p>They're not mutually exclusive — you can use <code>helm template</code> to render manifests, then manage them with Kustomize overlays.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- TERRAFORM -->
+<!-- ============================================================ -->
+<div id="terraform" class="section">
+  <h2 class="section-title">Terraform &amp; Infrastructure</h2>
+  <p class="section-subtitle">Where Terraform fits in the K8s world — and where it doesn't.</p>
+
+  <div class="card">
+    <h3><span class="icon">🏗️</span> The Two-Layer Model</h3>
+    <p>In the K8s world, infrastructure management splits into two distinct layers. Understanding this boundary is critical:</p>
+    <div class="flow-container">
+      <div class="flow-box flow-orange" style="flex: 1.2;">
+        <h4>Layer 1: Infra (Terraform)</h4>
+        <p>VPCs, subnets, the K8s cluster itself, node pools, IAM roles, DNS zones, databases, load balancers — the platform that K8s runs on.</p>
+      </div>
+      <div class="flow-box flow-blue" style="flex: 1.2;">
+        <h4>Layer 2: K8s Resources (Helm/Kustomize)</h4>
+        <p>Deployments, Services, ConfigMaps, Ingress, CRDs — everything that runs inside the cluster. Applied via kubectl, Helm, or GitOps tools.</p>
+      </div>
+    </div>
+    <p>Terraform has a Kubernetes provider that <em>can</em> manage K8s resources, but most teams avoid mixing the two layers in the same state. The dominant pattern is: Terraform provisions the cluster and node pools → a GitOps tool (ArgoCD/Flux) or Helm manages everything inside it.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📝</span> What Terraform Manages for K8s</h3>
+<pre><span class="comment"># Typical Terraform for EKS</span>
+<span class="keyword">module</span> <span class="string">"eks"</span> {
+  <span class="key">source</span>  = <span class="string">"terraform-aws-modules/eks/aws"</span>
+  <span class="key">version</span> = <span class="string">"~> 20.0"</span>
+
+  <span class="key">cluster_name</span>    = <span class="string">"production"</span>
+  <span class="key">cluster_version</span> = <span class="string">"1.29"</span>
+
+  <span class="key">vpc_id</span>     = module.vpc.vpc_id
+  <span class="key">subnet_ids</span> = module.vpc.private_subnets
+
+  <span class="key">eks_managed_node_groups</span> = {
+    <span class="key">general</span> = {
+      <span class="key">instance_types</span> = [<span class="string">"m6i.xlarge"</span>]
+      <span class="key">min_size</span>       = <span class="string">3</span>
+      <span class="key">max_size</span>       = <span class="string">10</span>
+      <span class="key">desired_size</span>   = <span class="string">5</span>
+    }
+    <span class="key">gpu</span> = {
+      <span class="key">instance_types</span> = [<span class="string">"g5.xlarge"</span>]
+      <span class="key">min_size</span>       = <span class="string">0</span>
+      <span class="key">max_size</span>       = <span class="string">4</span>
+      <span class="key">taints</span> = { <span class="key">gpu</span> = { <span class="key">value</span> = <span class="string">"true"</span>, <span class="key">effect</span> = <span class="string">"NO_SCHEDULE"</span> } }
+    }
+  }
+}</pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔀</span> Alternatives to Terraform</h3>
+    <p><strong>Pulumi:</strong> Same concept as Terraform but you write real code (TypeScript, Python, Go) instead of HCL. Strong K8s support.</p>
+    <p><strong>Crossplane:</strong> Manages cloud infrastructure using K8s-native CRDs. You define an RDS instance as a K8s manifest, and Crossplane's controllers provision it. "Infrastructure as K8s resources." Popular at K8s-native shops because it unifies the management plane.</p>
+    <p><strong>CDK for Terraform (CDKTF):</strong> Write Terraform in TypeScript/Python/Go. Best of both worlds if your team knows Terraform but wants real language features.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- OPERATORS & CRDs -->
+<!-- ============================================================ -->
+<div id="operators" class="section">
+  <h2 class="section-title">Operators &amp; CRDs</h2>
+  <p class="section-subtitle">The pattern that makes Kubernetes infinitely extensible — and what makes your new job interesting.</p>
+
+  <div class="card">
+    <h3><span class="icon">🧩</span> CRDs: Custom Resource Definitions</h3>
+    <p>A CRD extends the K8s API with a new resource type. Once you apply a CRD, you can create, read, update, and delete instances of that new type using kubectl, exactly like built-in resources. For example, after installing cert-manager, you get a <code>Certificate</code> resource type:</p>
+<pre><span class="key">apiVersion:</span> <span class="string">cert-manager.io/v1</span>
+<span class="key">kind:</span> <span class="string">Certificate</span>          <span class="comment"># ← this is a CRD, not built into K8s</span>
+<span class="key">metadata:</span>
+  <span class="key">name:</span> <span class="string">api-tls</span>
+<span class="key">spec:</span>
+  <span class="key">secretName:</span> <span class="string">api-tls-secret</span>
+  <span class="key">issuerRef:</span>
+    <span class="key">name:</span> <span class="string">letsencrypt-prod</span>
+    <span class="key">kind:</span> <span class="string">ClusterIssuer</span>
+  <span class="key">dnsNames:</span>
+  - <span class="string">api.example.com</span></pre>
+    <p>CRDs are just the schema definition. The <em>behavior</em> comes from a controller that watches for instances of that CRD and acts on them — that's where Operators come in.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🤖</span> Operators: The Pattern</h3>
+    <p>An Operator is a CRD + a custom controller that embeds domain-specific operational knowledge. It's a program running in your cluster that watches for your custom resources and does the right thing — provisioning, scaling, backing up, failover — automatically.</p>
+    <p>For example, a <strong>PostgreSQL Operator</strong> (like CloudNativePG or Zalando's postgres-operator) watches for <code>PostgresCluster</code> CRDs and handles: provisioning primary + replicas, automated failover, backups to S3, point-in-time recovery, version upgrades. All the ops knowledge of running Postgres, encoded as software.</p>
+
+    <div class="callout">
+      <strong>Why this matters at a K8s infra shop:</strong> A significant part of your job will likely involve building, deploying, or managing Operators. They are how platform teams provide self-service infrastructure to development teams — developers create a CRD instance, and the Operator handles everything else.
+    </div>
+
+    <div class="depth-toggle">
+      <div class="depth-header" onclick="toggleDepth(this)">
+        <span>↳ Deep dive: Building Operators</span>
+        <span class="arrow">▸</span>
+      </div>
+      <div class="depth-body">
+        <p>Operator frameworks provide scaffolding and libraries:</p>
+        <p><strong>Kubebuilder:</strong> The standard Go framework. Uses controller-runtime. Generates CRD manifests, RBAC, and project scaffolding. Most production operators use this.</p>
+        <p><strong>Operator SDK:</strong> Built on Kubebuilder with extra tooling (OLM integration, Ansible/Helm-based operators). From Red Hat/the Operator Framework project.</p>
+        <p><strong>Metacontroller:</strong> Write controllers as webhooks in any language. Lower barrier to entry but less mature.</p>
+        <p><strong>KUDO:</strong> Declarative operators using YAML plans. Good for simpler lifecycle management.</p>
+        <p>The maturity model for operators goes from basic install (Level 1) through full auto-pilot with auto-scaling and tuning (Level 5). Most real-world operators are Level 2-3.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🌟</span> Essential Operators You'll Encounter</h3>
+    <p><strong>cert-manager:</strong> Automates TLS certificate lifecycle. Talks to Let's Encrypt, Vault, or cloud CAs. Defines Certificate, Issuer, and ClusterIssuer CRDs.</p>
+    <p><strong>External Secrets Operator:</strong> Syncs secrets from Vault/AWS SM/GCP SM into K8s Secrets. ExternalSecret CRD.</p>
+    <p><strong>Prometheus Operator (kube-prometheus-stack):</strong> Defines ServiceMonitor, PodMonitor, PrometheusRule CRDs. Makes it declarative to configure monitoring.</p>
+    <p><strong>ArgoCD:</strong> GitOps controller. Application CRD defines what to deploy from which git repo.</p>
+    <p><strong>Crossplane:</strong> Cloud infrastructure as CRDs. Provisions RDS, S3, VPCs via K8s manifests.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- DEV TOOLS -->
+<!-- ============================================================ -->
+<div id="dev-tools" class="section">
+  <h2 class="section-title">Development &amp; Build Tools</h2>
+  <p class="section-subtitle">The local development and CI/CD toolchain for working with Kubernetes.</p>
+
+  <div class="card">
+    <h3><span class="icon">🏠</span> Local Cluster Tools</h3>
+    <div class="flow-container">
+      <div class="flow-box flow-blue">
+        <h4>kind</h4>
+        <p><strong>Kubernetes IN Docker.</strong> Runs multi-node K8s clusters inside Docker containers on your laptop. The gold standard for local development and CI testing. Fast to create/destroy. Simulates real multi-node behavior.</p>
+      </div>
+      <div class="flow-box flow-purple">
+        <h4>minikube</h4>
+        <p>The original local K8s. Runs a single-node cluster in a VM or container. Has add-on ecosystem (dashboard, ingress, metrics-server). Slightly heavier than kind.</p>
+      </div>
+      <div class="flow-box flow-green">
+        <h4>k3d</h4>
+        <p>Runs k3s (lightweight K8s) in Docker. Similar to kind but based on Rancher's k3s distro. Fast and lightweight.</p>
+      </div>
+    </div>
+<pre><span class="comment"># kind — create a cluster in seconds</span>
+kind create cluster --name dev --config kind-config.yaml
+kind load docker-image my-app:latest --name dev  <span class="comment"># load local images</span>
+kind delete cluster --name dev
+
+<span class="comment"># Multi-node kind config</span>
+<span class="key">kind:</span> <span class="string">Cluster</span>
+<span class="key">apiVersion:</span> <span class="string">kind.x-k8s.io/v1alpha4</span>
+<span class="key">nodes:</span>
+- <span class="key">role:</span> <span class="string">control-plane</span>
+- <span class="key">role:</span> <span class="string">worker</span>
+- <span class="key">role:</span> <span class="string">worker</span></pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔄</span> Tilt — Inner Loop Development</h3>
+    <p>Tilt watches your source code, automatically rebuilds container images, and hot-reloads them into your local K8s cluster. It collapses the "edit → build → push → deploy → test" cycle into "edit → see changes." Think of it as the K8s equivalent of hot-reload for your entire microservice stack.</p>
+    <p>You define a <code>Tiltfile</code> (written in Starlark, a Python dialect) that describes how to build and deploy your services:</p>
+<pre><span class="comment"># Tiltfile</span>
+docker_build(<span class="string">'my-app'</span>, <span class="string">'.'</span>)    <span class="comment"># build image from Dockerfile</span>
+k8s_yaml(<span class="string">'k8s/deployment.yaml'</span>) <span class="comment"># apply manifests</span>
+k8s_resource(<span class="string">'my-app'</span>,
+  port_forwards=<span class="string">'8080:8080'</span>,   <span class="comment"># auto port-forward</span>
+  resource_deps=[<span class="string">'database'</span>])   <span class="comment"># dependency ordering</span></pre>
+    <p>Tilt also provides a web UI showing the status of all your services, their logs, and build status in one dashboard.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🏎️</span> ko — Fast Go Container Builds</h3>
+    <p><code>ko</code> builds Go applications into container images <em>without a Dockerfile</em>. It compiles your Go binary and layers it onto a minimal base image, then pushes to a registry. It's dramatically faster than Docker builds for Go and produces minimal, secure images.</p>
+    <p>At a K8s infra shop where controllers and operators are written in Go, ko is likely part of the standard workflow:</p>
+<pre><span class="comment"># Build and push to registry</span>
+ko build ./cmd/my-controller
+
+<span class="comment"># Apply manifest with ko resolving image references</span>
+ko apply -f config/        <span class="comment"># replaces image: ko://... with real image refs</span>
+
+<span class="comment"># Use with kind for local dev</span>
+KO_DOCKER_REPO=kind.local ko apply -f config/</pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔨</span> Other Build &amp; Image Tools</h3>
+    <p><strong>Skaffold:</strong> Google's build/deploy tool (similar to Tilt). Watches code, builds images, deploys to cluster. Has more CI/CD pipeline features.</p>
+    <p><strong>Buildpacks (pack):</strong> Builds container images from source without a Dockerfile. Detects language and framework automatically.</p>
+    <p><strong>kaniko:</strong> Builds Docker images inside a container without Docker daemon. Essential for building images in K8s-based CI (you can't run Docker-in-Docker easily in K8s pods).</p>
+    <p><strong>Earthly:</strong> Makefile + Dockerfile hybrid. Reproducible builds that work locally and in CI identically.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ADVANCED -->
+<!-- ============================================================ -->
+<div id="advanced" class="section">
+  <h2 class="section-title">Advanced Concepts</h2>
+  <p class="section-subtitle">Patterns and systems you'll encounter at a core K8s infrastructure shop.</p>
+
+  <div class="card">
+    <h3><span class="icon">🔄</span> GitOps (ArgoCD &amp; Flux)</h3>
+    <p>GitOps is the dominant deployment pattern in the K8s world. The idea: Git is the single source of truth for your cluster state. A GitOps controller running in the cluster watches a Git repo, and any time the repo changes, it syncs the cluster to match.</p>
+    <p><strong>ArgoCD</strong> is the most popular GitOps tool. It provides a web UI showing the sync status of every application, diff views, manual sync triggers, and multi-cluster support. It defines an <code>Application</code> CRD that points to a Git repo path and a target cluster/namespace.</p>
+    <p><strong>Flux</strong> (from Weaveworks/CNCF) is the alternative — more lightweight, "Git-native," and composable with its own set of CRDs (GitRepository, Kustomization, HelmRelease).</p>
+    <div class="callout">
+      <strong>Why GitOps wins:</strong> Audit trail (every change is a commit), rollback (git revert), pull request reviews for infrastructure changes, and drift detection (the controller alerts if someone applies something manually that doesn't match Git).
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📈</span> Autoscaling — Three Dimensions</h3>
+    <p><strong>HorizontalPodAutoscaler (HPA):</strong> Scales pod replicas based on CPU, memory, or custom metrics. Like ECS Service Auto Scaling with target tracking.</p>
+    <p><strong>VerticalPodAutoscaler (VPA):</strong> Adjusts pod resource requests/limits over time based on actual usage. Helps right-size pods. Can be advisory-only or auto-apply.</p>
+    <p><strong>Cluster Autoscaler / Karpenter:</strong> Adds or removes nodes based on pending pods. Cluster Autoscaler works with cloud-provider auto-scaling groups. Karpenter (from AWS, now CNCF) is more modern — it provisions nodes directly via the cloud API, faster and more flexible. If you're on EKS, Karpenter is likely what you'll use.</p>
+    <p><strong>KEDA (Kubernetes Event-Driven Autoscaling):</strong> Scales based on external event sources — SQS queue depth, Kafka lag, Prometheus queries, cron schedules. Much richer than HPA alone.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔒</span> RBAC (Role-Based Access Control)</h3>
+    <p>RBAC controls who can do what in the cluster. Four resource types:</p>
+    <p><strong>Role / ClusterRole:</strong> Define permissions (which API verbs on which resource types). Role is namespace-scoped, ClusterRole is cluster-wide.</p>
+    <p><strong>RoleBinding / ClusterRoleBinding:</strong> Attach a Role to a subject (user, group, or ServiceAccount).</p>
+    <p>ServiceAccounts are identities for pods. Combined with IRSA (IAM Roles for Service Accounts on EKS), a ServiceAccount can map to an IAM role, giving pods fine-grained AWS permissions — replacing the ECS Task Role pattern.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🛡️</span> Policy Engines &amp; Admission Control</h3>
+    <p>Admission controllers intercept requests to the K8s API before they're persisted. This is where you enforce security policies, inject sidecars, mutate resources, and validate configurations.</p>
+    <p><strong>OPA/Gatekeeper:</strong> Policy engine using Rego language. Define ConstraintTemplates for policies like "all pods must have resource limits" or "no privileged containers."</p>
+    <p><strong>Kyverno:</strong> K8s-native policy engine. Policies are written as K8s resources (YAML), not a separate language. Lower learning curve. Can validate, mutate, and generate resources.</p>
+    <p><strong>Pod Security Standards (PSS) / Pod Security Admission:</strong> Built-in, replaces the deprecated PodSecurityPolicies. Three levels: Privileged, Baseline, Restricted. Applied per-namespace.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📊</span> Observability Stack</h3>
+    <p>K8s doesn't ship with built-in monitoring (unlike CloudWatch in ECS). You build an observability stack:</p>
+    <p><strong>Metrics:</strong> Prometheus (collection) + Grafana (visualization). The Prometheus Operator makes this declarative. metrics-server provides basic CPU/memory for HPA.</p>
+    <p><strong>Logs:</strong> Fluentd/Fluent Bit (collection) → Elasticsearch/Loki (storage) → Grafana/Kibana (query). Or a managed service like Datadog, New Relic.</p>
+    <p><strong>Traces:</strong> OpenTelemetry (instrumentation) → Jaeger/Tempo (storage and UI). Essential for debugging microservice architectures.</p>
+    <p><strong>The "Grafana stack" (Loki + Tempo + Mimir + Grafana)</strong> is becoming the de facto open-source standard, especially with OpenTelemetry as the unified collection layer.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔀</span> Multi-Cluster &amp; Federation</h3>
+    <p>At a core K8s infra shop, you'll likely manage multiple clusters. Patterns include:</p>
+    <p><strong>Cluster API (CAPI):</strong> Manages the lifecycle of K8s clusters themselves using K8s resources. You define a <code>Cluster</code> CRD, and CAPI provisions the actual infrastructure. It's "Kubernetes managing Kubernetes."</p>
+    <p><strong>Submariner / Skupper:</strong> Cross-cluster networking, letting Services in one cluster reach Services in another.</p>
+    <p><strong>vCluster:</strong> Virtual clusters — lightweight K8s clusters that run inside a host cluster's namespace. Great for multi-tenancy, CI environments, and dev isolation.</p>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ECOSYSTEM MAP -->
+<!-- ============================================================ -->
+<div id="ecosystem" class="section">
+  <h2 class="section-title">The Ecosystem at a Glance</h2>
+  <p class="section-subtitle">A categorized map of the tools, projects, and systems you'll encounter.</p>
+
+  <div class="card">
+    <h3><span class="icon">🗂️</span> By Category</h3>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent);">Cluster Provisioning</strong></p>
+    <p>EKS / GKE / AKS (managed) · kubeadm (manual) · Cluster API (declarative) · k3s (lightweight) · Talos (immutable OS)</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent2);">Infrastructure as Code</strong></p>
+    <p>Terraform · Pulumi · Crossplane · CDK for Terraform · OpenTofu</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent3);">Package Management &amp; Templating</strong></p>
+    <p>Helm · Kustomize · Carvel (ytt + kapp) · Jsonnet · cdk8s</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent4);">GitOps &amp; Continuous Delivery</strong></p>
+    <p>ArgoCD · Flux · ArgoRollouts · Flagger · Spinnaker · Tekton</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent5);">Networking</strong></p>
+    <p>Cilium · Calico · Flannel (CNI) · NGINX Ingress · Traefik · Envoy/Emissary · Gateway API · CoreDNS</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent);">Service Mesh</strong></p>
+    <p>Istio · Linkerd · Cilium Service Mesh · Consul Connect</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent2);">Security</strong></p>
+    <p>OPA/Gatekeeper · Kyverno · Falco (runtime) · Trivy (scanning) · cert-manager · External Secrets Operator · Sealed Secrets · SPIFFE/SPIRE</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent3);">Observability</strong></p>
+    <p>Prometheus · Grafana · Loki · Tempo · Mimir · OpenTelemetry · Jaeger · Datadog · Pixie (eBPF)</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent4);">Local Dev</strong></p>
+    <p>kind · minikube · k3d · Tilt · Skaffold · Telepresence · DevSpace</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent5);">Build &amp; Image</strong></p>
+    <p>ko · kaniko · Buildpacks · Earthly · Docker/Podman · Harbor (registry)</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent);">Autoscaling</strong></p>
+    <p>HPA · VPA · Cluster Autoscaler · Karpenter · KEDA</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent2);">Operator Frameworks</strong></p>
+    <p>Kubebuilder · Operator SDK · Metacontroller · KUDO · controller-runtime</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent3);">Multi-Cluster</strong></p>
+    <p>Cluster API · vCluster · Submariner · Liqo · Admiralty</p>
+
+    <p style="margin-top: 16px; margin-bottom: 6px;"><strong style="color: var(--accent4);">Developer Experience</strong></p>
+    <p>kubectl · kubectx/kubens · k9s (terminal UI) · Lens (desktop UI) · krew (plugin manager) · stern (multi-pod log tailing)</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🗺️</span> Recommended Learning Path</h3>
+    <p><strong>Week 1-2:</strong> Get comfortable with kubectl, deploy apps to kind, understand Pods → Deployments → Services → Ingress. Write raw manifests by hand. Break things.</p>
+    <p><strong>Week 3-4:</strong> Learn Helm (install third-party charts, then write your own). Understand Kustomize. Set up port-forwarding, debug failed pods, read events.</p>
+    <p><strong>Week 5-6:</strong> Dive into RBAC, NetworkPolicies, resource quotas. Understand the security model. Learn about ServiceAccounts and IRSA if on EKS.</p>
+    <p><strong>Week 7-8:</strong> Study Operators and CRDs. Install cert-manager, understand how it works. Read the Kubebuilder book. Start reading your team's operator code.</p>
+    <p><strong>Ongoing:</strong> GitOps with ArgoCD, observability stack, service mesh concepts, Cluster API, advanced scheduling (affinity, topology spread constraints), admission webhooks. Attend KubeCon talks on YouTube.</p>
+  </div>
+
+  <div class="callout">
+    <strong>Final thought:</strong> The K8s ecosystem can feel overwhelming, but remember — you already understand the core problem (running containers reliably at scale). Everything in K8s is just a more explicit, composable, and extensible way of solving the same problems you solved in ECS. The learning curve is steep at first, but the mental model clicks fast once you see the reconciliation loop pattern repeating everywhere.
+  </div>
+</div>
+
+</div><!-- /container -->
+
+<!-- QUIZ SECTION — rendered by JS outside .container for full control -->
+<div class="container" id="quiz-container" style="display:none;">
+<div id="quiz" class="section active">
+  <h2 class="section-title">Knowledge Check</h2>
+  <p class="section-subtitle">25 questions spanning core concepts, real-world scenarios, and advanced strategies. Shuffled fresh every time you load.</p>
+
+  <div class="quiz-progress">
+    <div class="quiz-progress-text" id="quiz-progress-label">0 / 25 answered</div>
+    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div></div>
+    <div class="quiz-progress-text" id="quiz-score-label">Score: 0</div>
+  </div>
+
+  <div id="quiz-questions"></div>
+
+  <div class="quiz-actions" id="quiz-bottom-actions" style="display:none;">
+    <button class="quiz-btn quiz-btn-primary" onclick="resetQuiz()">🔄 Reshuffle &amp; Retry</button>
+    <button class="quiz-btn" onclick="showSection('mental-model')">← Back to Guide</button>
+  </div>
+</div>
+</div>
+
+<script>
+/* ── Section navigation ──────────────────────────────── */
+function showSection(id) {
+  // Hide all main sections
+  document.querySelectorAll('.container > .section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  // Handle quiz specially since it's in its own container
+  const mainContainer = document.querySelector('.container:not(#quiz-container)');
+  const quizContainer = document.getElementById('quiz-container');
+
+  if (id === 'quiz') {
+    mainContainer.style.display = 'none';
+    quizContainer.style.display = 'block';
+    document.getElementById('quiz').classList.add('active');
+    initQuiz();
+  } else {
+    mainContainer.style.display = 'block';
+    quizContainer.style.display = 'none';
+    document.getElementById(id).classList.add('active');
+  }
+
+  // Highlight active nav button
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+  });
+
+  window.scrollTo({ top: document.querySelector('.nav').offsetTop, behavior: 'smooth' });
+}
+
+function toggleDepth(header) {
+  header.classList.toggle('open');
+  header.nextElementSibling.classList.toggle('open');
+}
+
+/* ── Quiz Data ───────────────────────────────────────── */
+const quizData = [
+  {
+    category: "Core", catColor: "var(--accent)",
+    question: "Your pod is stuck in 'Pending' state and kubectl describe shows 'Insufficient cpu'. No nodes have available capacity. You're running on EKS with Karpenter. What happens next?",
+    options: [
+      "Karpenter detects the unschedulable pod and provisions a new node with appropriate instance type to satisfy the resource request",
+      "The HorizontalPodAutoscaler detects the pending pod and reduces the replica count to fit available capacity",
+      "The scheduler retries indefinitely with exponential backoff until an existing node frees up resources",
+      "The pod is automatically terminated after the default eviction timeout of 5 minutes"
+    ],
+    correct: 0,
+    explanation: "Karpenter watches for unschedulable pods (those in Pending due to resource constraints). It then provisions right-sized nodes directly via the cloud API — much faster than Cluster Autoscaler which works through Auto Scaling Groups. This is one of Karpenter's key advantages: it evaluates the pending pod's requirements and launches an instance type that fits, rather than adding a generic node from a predefined node group."
+  },
+  {
+    category: "Networking", catColor: "var(--accent5)",
+    question: "You create a Service of type ClusterIP for your API pods. A frontend pod in the same namespace tries to reach it. Which DNS name will resolve correctly?",
+    options: [
+      "api-server (short name, since they're in the same namespace)",
+      "api-server.production.svc.cluster.local (FQDN)",
+      "Both of the above will resolve correctly",
+      "Neither — you need to create a separate DNS record manually"
+    ],
+    correct: 2,
+    explanation: "CoreDNS in Kubernetes provides both short-name and FQDN resolution. Within the same namespace, the short name (just the Service name) resolves via the search domain configured in the pod's /etc/resolv.conf. The FQDN form (service.namespace.svc.cluster.local) always works regardless of which namespace you're calling from. This is built-in — no manual DNS configuration needed. Coming from ECS, this replaces Cloud Map / ECS Service Discovery."
+  },
+  {
+    category: "Workloads", catColor: "var(--accent2)",
+    question: "You're deploying a new version of your app. Your Deployment has maxSurge: 1 and maxUnavailable: 0 with 3 replicas. What does the rollout look like?",
+    options: [
+      "All 3 old pods are killed simultaneously, then 3 new pods are created",
+      "A 4th pod (new version) is created, and once ready, one old pod is removed — repeating until all are replaced",
+      "One old pod is killed first, then one new pod is created — always maintaining 2 running pods minimum",
+      "All 4 pods (3 old + 1 new) run simultaneously until you manually cut over traffic"
+    ],
+    correct: 1,
+    explanation: "With maxSurge: 1 and maxUnavailable: 0, you're saying 'I can temporarily have 1 extra pod beyond my desired count, but I must never have fewer than 3 ready pods.' So K8s creates 1 new pod (bringing total to 4), waits for it to pass its readiness probe, then terminates 1 old pod (back to 3). It repeats this one-at-a-time until all pods are running the new version. This is the safest rolling update strategy — zero downtime guaranteed — and it's the pattern most production deployments use."
+  },
+  {
+    category: "Helm", catColor: "var(--accent4)",
+    question: "Your team's Helm chart has values in values.yaml, a prod-values.yaml override file, and your CI pipeline also passes --set image.tag=v2.5.0. A key 'replicas' is set to 2 in values.yaml and 5 in prod-values.yaml. What's the final replica count, and what's the image tag?",
+    options: [
+      "replicas: 2, tag: v2.5.0 — the base values.yaml always wins for fields not in --set",
+      "replicas: 5, tag: v2.5.0 — each layer overrides the previous: base → file → --set",
+      "replicas: 5, tag: whatever is in values.yaml — --set only works for fields already in override files",
+      "This causes a conflict error and Helm refuses to install"
+    ],
+    correct: 1,
+    explanation: "Helm applies values in a strict precedence order: values.yaml (defaults) → -f override file(s) → --set flags. Each layer merges on top of the previous, with later values winning for the same key. So prod-values.yaml overrides replicas to 5, and --set overrides the image tag to v2.5.0. Understanding this layering is essential — it's how teams manage the same chart across dev/staging/prod, with each environment getting its own override file and CI injecting build-specific values via --set."
+  },
+  {
+    category: "Operators", catColor: "var(--accent3)",
+    question: "You've installed the External Secrets Operator and created an ExternalSecret resource pointing to AWS Secrets Manager. What does the operator actually create in the cluster?",
+    options: [
+      "A ConfigMap containing the secret data in base64-encoded format",
+      "A native Kubernetes Secret that stays synced with the value in AWS Secrets Manager",
+      "A CRD called ManagedSecret that wraps the AWS SDK call with caching",
+      "Nothing in-cluster — pods reference the ExternalSecret directly and it fetches at runtime"
+    ],
+    correct: 1,
+    explanation: "The External Secrets Operator follows the standard operator pattern: it watches for ExternalSecret custom resources, reads the referenced secret from the external provider (AWS Secrets Manager in this case), and creates/updates a native Kubernetes Secret. Pods use this K8s Secret normally (as env vars or volume mounts). The operator's reconciliation loop keeps the K8s Secret in sync if the value changes in AWS. This is the bridge between cloud-native secrets management and K8s-native configuration."
+  },
+  {
+    category: "Scenario", catColor: "var(--accent4)",
+    question: "Your team runs a stateless API with 10 replicas across 3 availability zones. One AZ goes down, taking 3-4 pods with it. What ensures your pods are rebalanced, and what ensures replacement pods come up?",
+    options: [
+      "The Deployment controller detects the missing replicas and creates new pods; the scheduler places them on healthy nodes using topology spread constraints",
+      "Karpenter immediately launches replacement nodes in the surviving AZs, and pods reschedule automatically",
+      "The StatefulSet controller handles this because AZ-aware scheduling requires stable identity",
+      "NetworkPolicies detect the unreachable pods and redirect traffic while the HPA scales up replacements"
+    ],
+    correct: 0,
+    explanation: "The Deployment's ReplicaSet controller continuously reconciles desired vs. actual pod count. When nodes become NotReady (AZ outage), the pods on them are eventually evicted and the ReplicaSet creates replacements. The scheduler places these new pods on healthy nodes. Topology Spread Constraints (topologySpreadConstraints in the pod spec) are what control AZ distribution — they tell the scheduler to spread pods evenly across zones, even after recovery. Karpenter may also add nodes if existing ones lack capacity, but the Deployment controller drives the pod lifecycle."
+  },
+  {
+    category: "Security", catColor: "var(--accent5)",
+    question: "A developer on your team can view pods in the 'staging' namespace but shouldn't be able to delete them or access 'production'. Which combination of RBAC resources achieves this?",
+    options: [
+      "A ClusterRole with 'get, list, watch' on pods, bound with a ClusterRoleBinding",
+      "A Role in 'staging' with 'get, list, watch' on pods, bound with a RoleBinding in 'staging'",
+      "A ClusterRole with 'get, list, watch' on pods, bound with a RoleBinding in 'staging'",
+      "Both B and C would work correctly"
+    ],
+    correct: 3,
+    explanation: "Both approaches work. Option B creates a namespace-scoped Role and binds it in staging — simple and contained. Option C uses a ClusterRole (which defines the permissions cluster-wide as a template) but binds it with a namespace-scoped RoleBinding in staging, which constrains its effect to that namespace only. Option C is actually the more common pattern in practice, because you can define one ClusterRole (like 'pod-reader') and reuse it across many namespaces with separate RoleBindings, rather than duplicating the Role in each namespace."
+  },
+  {
+    category: "Storage", catColor: "var(--accent2)",
+    question: "You're running PostgreSQL on Kubernetes using a StatefulSet. The pod is rescheduled to a different node. What happens to its data?",
+    options: [
+      "The data is lost because the pod's filesystem is ephemeral",
+      "The PersistentVolumeClaim follows the StatefulSet pod identity, and the PV (e.g., EBS volume) is reattached to the pod on the new node",
+      "The data is only preserved if you configured a hostPath volume on the original node",
+      "The StatefulSet blocks rescheduling to a different node to prevent data loss"
+    ],
+    correct: 1,
+    explanation: "StatefulSets use volumeClaimTemplates to create a dedicated PVC for each pod (e.g., data-postgres-0). This PVC is bound to a PersistentVolume (like an EBS volume). When the pod is rescheduled, the PVC persists — it's tied to the pod's stable identity (postgres-0), not the node. The CSI driver handles detaching the EBS volume from the old node and reattaching it to the new one. This is exactly why StatefulSets exist: stable identity + stable storage across rescheduling."
+  },
+  {
+    category: "DevTools", catColor: "var(--accent3)",
+    question: "You're using ko to build a Go controller. What does ko do differently from a standard Docker build?",
+    options: [
+      "ko compiles the Go binary natively, layers it onto a minimal base image, and pushes to a registry — all without Docker or a Dockerfile",
+      "ko wraps Docker build with caching optimizations specific to Go modules",
+      "ko creates a distroless Dockerfile automatically and delegates to Docker daemon",
+      "ko only creates the container image locally — you still need Docker push to upload it"
+    ],
+    correct: 0,
+    explanation: "ko bypasses Docker entirely. It uses the Go toolchain to compile your binary (respecting GOOS/GOARCH), layers it onto a distroless base image using the go-containerregistry library, and pushes directly to a container registry. No Dockerfile, no Docker daemon needed. This makes it dramatically faster than Docker builds for Go projects and produces minimal, secure images. In K8s controller development (Kubebuilder projects), ko is the standard build tool because operators are almost always written in Go."
+  },
+  {
+    category: "Core", catColor: "var(--accent)",
+    question: "What is the fundamental difference between a liveness probe and a readiness probe?",
+    options: [
+      "Liveness probes check TCP connectivity while readiness probes check HTTP endpoints",
+      "Liveness failure restarts the container; readiness failure removes the pod from the Service's endpoints (stops sending traffic)",
+      "Liveness probes run during startup only; readiness probes run continuously",
+      "There is no functional difference — they're aliases for the same check"
+    ],
+    correct: 1,
+    explanation: "This distinction is critical for production reliability. A liveness probe failure tells kubelet the container is broken beyond recovery — so kubelet kills and restarts it. A readiness probe failure tells the system the pod shouldn't receive traffic right now (maybe it's still loading a cache, or a dependency is down) — so the Service removes it from its endpoints. You typically want both: liveness to catch deadlocks, readiness to handle temporary inability to serve. Misconfiguring them (especially liveness probes with short timeouts) is one of the most common sources of cascading failures in K8s."
+  },
+  {
+    category: "Networking", catColor: "var(--accent5)",
+    question: "Your cluster has an NGINX Ingress Controller running. You apply an Ingress resource with host: api.example.com and path: /v1 pointing to your Service. Traffic isn't reaching your pods. What's the most likely first thing to check?",
+    options: [
+      "Whether the Ingress resource has the correct ingressClassName matching your NGINX controller",
+      "Whether your pods have the correct CPU resource limits set",
+      "Whether you've created a NetworkPolicy allowing traffic from the Ingress controller namespace",
+      "Whether your NGINX controller has been assigned a public IP via a DaemonSet"
+    ],
+    correct: 0,
+    explanation: "The most common cause of Ingress not working is a mismatch between the Ingress resource's ingressClassName and the controller's configured class. Since K8s 1.18+, multiple Ingress controllers can coexist in a cluster, each watching for Ingress resources that match its class. If you have ingressClassName: nginx but your controller is configured with a different class (or vice versa), it will simply ignore your Ingress resource. After that, you'd check the Service selector matches pod labels, and that the backend pods are actually Ready."
+  },
+  {
+    category: "Scenario", catColor: "var(--accent4)",
+    question: "Your company wants to let development teams self-service their own PostgreSQL databases without filing tickets. As a platform engineer, which approach best fits the K8s-native model?",
+    options: [
+      "Create a shared Helm chart for PostgreSQL that developers install with custom values files",
+      "Deploy a PostgreSQL Operator (like CloudNativePG) so developers create a PostgresCluster CRD, and the operator handles provisioning, backups, and failover automatically",
+      "Write Terraform modules that developers trigger via CI pipelines to create RDS instances",
+      "Create a self-service web portal that calls kubectl behind the scenes"
+    ],
+    correct: 1,
+    explanation: "This is the Operator pattern at its best — and likely the core of what a K8s infra shop does. A PostgreSQL Operator encodes all the operational knowledge (provisioning replicas, streaming replication, automated failover, backup schedules, PG version upgrades) into a controller. Developers just submit a simple CRD manifest saying 'I want a 3-node PostgreSQL 16 cluster with daily backups to S3' and the Operator handles everything. Helm charts require developers to understand PG operations; Terraform moves you outside the K8s ecosystem; a portal is an antipattern when you have a perfectly good API (the K8s API itself)."
+  },
+  {
+    category: "Terraform", catColor: "var(--accent4)",
+    question: "Your team uses Terraform to manage EKS clusters and ArgoCD to manage everything inside them. A teammate proposes using the Terraform Kubernetes provider to also manage Deployments and Services. What's the problem with this approach?",
+    options: [
+      "The Terraform K8s provider can't handle custom resources or CRDs",
+      "Terraform state and the K8s reconciliation loop conflict — Terraform expects to own the resource state, but controllers, HPA, and other K8s components constantly modify resources, causing perpetual drift",
+      "The Terraform K8s provider is deprecated and no longer maintained",
+      "There's no problem — this is a valid pattern used by many teams"
+    ],
+    correct: 1,
+    explanation: "This is one of the most important architectural decisions in the K8s ecosystem. Terraform's model is declarative but snapshot-based: it compares desired state (HCL) to its stored state file. K8s resources, however, are constantly mutated by controllers — HPA changes replica counts, the Deployment controller updates status fields, pods get IP assignments. This creates perpetual 'drift' that Terraform tries to reconcile on every apply, potentially overwriting legitimate in-cluster changes. The industry standard is the two-layer model: Terraform for infrastructure (VPCs, the cluster itself, node pools, IAM), and K8s-native tools (Helm, Kustomize, ArgoCD) for everything inside the cluster."
+  },
+  {
+    category: "Advanced", catColor: "var(--accent2)",
+    question: "You want to enforce that every Deployment in your cluster must have resource requests and limits set. Which approach is most maintainable?",
+    options: [
+      "Add a Git pre-commit hook that parses YAML and rejects manifests missing resource specs",
+      "Deploy Kyverno or OPA/Gatekeeper with a policy that uses a validating admission webhook to reject Deployments without resource specs at the API server level",
+      "Create a CronJob that scans all Deployments hourly and deletes non-compliant ones",
+      "Configure the kubelet on each node to reject pods without resource limits"
+    ],
+    correct: 1,
+    explanation: "Admission webhooks are the correct enforcement point because they intercept requests at the API server before resources are persisted to etcd. Kyverno makes this particularly easy — the policy is a K8s resource itself (ClusterPolicy) written in YAML. OPA/Gatekeeper achieves the same with Rego language. Git hooks are good defense-in-depth but can be bypassed (kubectl apply directly). CronJobs are reactive, not preventive. Kubelet doesn't have this capability — it executes what the scheduler assigns."
+  },
+  {
+    category: "Config", catColor: "var(--accent3)",
+    question: "You store database credentials in a Kubernetes Secret and mount them as environment variables. A teammate says this is insecure. Why are they partially right, and what's the proper production approach?",
+    options: [
+      "K8s Secrets are unencrypted in etcd by default and visible to anyone with RBAC read access in the namespace; use External Secrets Operator syncing from Vault or cloud KMS with encryption at rest enabled",
+      "K8s Secrets are fully encrypted and secure, but environment variables can leak in crash dumps; use volume mounts instead of env vars",
+      "The issue is that Secrets are stored in the container filesystem and persist after pod deletion",
+      "K8s Secrets are only insecure if you use them with ConfigMaps in the same pod"
+    ],
+    correct: 0,
+    explanation: "K8s Secrets are base64-encoded (not encrypted!) in etcd by default. Anyone with RBAC permission to 'get secrets' in the namespace can decode them trivially. The production solution has multiple layers: enable encryption at rest in etcd (EncryptionConfiguration), use an external secrets manager (Vault, AWS Secrets Manager, GCP Secret Manager) as the source of truth, deploy the External Secrets Operator to sync them into K8s Secrets, and enforce RBAC so only the pods' ServiceAccounts can read the specific secrets they need. The teammate is also right that env vars can leak in logs and process listings — volume-mounted secrets files are generally preferred."
+  },
+  {
+    category: "Workloads", catColor: "var(--accent2)",
+    question: "You need to run a log collection agent on every node in your cluster, including nodes added later by autoscaling. Which workload resource is correct?",
+    options: [
+      "A Deployment with replicas set equal to the number of nodes, using pod anti-affinity",
+      "A DaemonSet — it automatically runs exactly one pod on every node (including new nodes as they join)",
+      "A StatefulSet with node affinity rules targeting each specific node by name",
+      "A CronJob that discovers nodes and creates individual pods for each"
+    ],
+    correct: 1,
+    explanation: "DaemonSets are purpose-built for this pattern. The DaemonSet controller ensures exactly one pod runs on every node that matches the selector (or every node, if no selector is specified). When Karpenter or Cluster Autoscaler adds a new node, the DaemonSet controller automatically schedules a pod on it. When a node is removed, the pod is cleaned up. This is the standard pattern for node-level agents: Fluent Bit/Fluentd for log collection, Datadog or Prometheus node-exporter for monitoring, Cilium or Calico for CNI, and CSI node plugins."
+  },
+  {
+    category: "Helm", catColor: "var(--accent4)",
+    question: "You're evaluating whether to use Helm or Kustomize for managing your internal microservices. Your team deploys 15 similar Go services with minor per-service differences (different image, port, replica count, env vars). What's the strongest argument for each?",
+    options: [
+      "Helm: one chart with per-service values files eliminates YAML duplication. Kustomize: overlays are simpler to review in PRs since there's no templating language",
+      "Helm: it can manage CRDs natively. Kustomize: it's faster because it doesn't need to install anything",
+      "Helm: it supports rollback. Kustomize: it supports namespaces",
+      "There's no meaningful difference — they produce identical results"
+    ],
+    correct: 0,
+    explanation: "For 15 similar services, Helm shines because you write one chart and parameterize the differences through values files (api/values.yaml, auth/values.yaml, etc.) — zero YAML duplication. The tradeoff is that Go template syntax in charts can become hard to read and review. Kustomize's strength is transparency: base manifests are valid, readable YAML, and overlays are structured patches — easy to review in PRs because there's no template language to mentally evaluate. Many teams use both: Helm for third-party charts (cert-manager, Prometheus) and Kustomize for internal apps. Or they use Helm to template, then manage the output with Kustomize."
+  },
+  {
+    category: "Core", catColor: "var(--accent)",
+    question: "You taint a node with key=gpu, effect=NoSchedule. What happens to pods already running on that node, and what happens to new pods without a matching toleration?",
+    options: [
+      "Existing pods are immediately evicted; new pods without the toleration are rejected",
+      "Existing pods continue running unaffected; new pods without the toleration are not scheduled there",
+      "Existing pods and new pods are both blocked — the node becomes completely unusable",
+      "Existing pods are given a 5-minute grace period before eviction; new pods are rejected immediately"
+    ],
+    correct: 1,
+    explanation: "NoSchedule only affects future scheduling decisions — existing pods are not evicted. This is by design: you can taint a node to prevent new workloads from landing there without disrupting running ones. If you wanted to also evict existing pods, you'd use the NoExecute effect instead, which both prevents scheduling AND evicts pods that don't tolerate the taint (with an optional tolerationSeconds grace period). There's also PreferNoSchedule, which is a soft version — the scheduler tries to avoid the node but will use it if no alternatives exist."
+  },
+  {
+    category: "GitOps", catColor: "var(--accent3)",
+    question: "ArgoCD shows your application as 'OutOfSync' but 'Healthy'. A teammate manually ran kubectl scale to handle a traffic spike. What's happening and what's the right long-term fix?",
+    options: [
+      "ArgoCD detected drift between Git (desired state) and the cluster (actual state) because the manual scale changed the replica count from what Git defines; the fix is to use HPA so autoscaling happens within the K8s control loop, not by modifying the Deployment replicas field that ArgoCD watches",
+      "ArgoCD is broken and needs to be resynced; manual kubectl commands are always safe",
+      "The 'OutOfSync' status means ArgoCD will immediately revert the manual change back to the Git-defined replica count",
+      "This can only be fixed by committing the new replica count to Git within 5 minutes before ArgoCD auto-reverts"
+    ],
+    correct: 0,
+    explanation: "This is a classic GitOps friction point. ArgoCD continuously compares the live cluster state to what's defined in Git. The manual scale changed the replica count in the cluster, creating drift — hence 'OutOfSync'. Whether ArgoCD reverts it depends on your sync policy (auto-sync with self-heal would revert it; manual sync wouldn't). The real fix is HPA: the HPA controller adjusts replicas based on metrics within the cluster, and you configure the Deployment in Git without a fixed replica count (or with a min), letting HPA manage the actual scaling. ArgoCD can be configured to ignore HPA-managed fields to avoid false drift detection."
+  },
+  {
+    category: "Scenario", catColor: "var(--accent4)",
+    question: "Your company is migrating from ECS to EKS. The ECS services use IAM Task Roles for AWS API access (reading from S3, writing to SQS). What's the equivalent mechanism on EKS?",
+    options: [
+      "Attach IAM policies directly to the EKS node IAM role — all pods on the node share the same permissions",
+      "Use IRSA (IAM Roles for Service Accounts): create a K8s ServiceAccount annotated with an IAM role ARN, and assign it to your pods. AWS STS provides scoped credentials to each pod.",
+      "Store AWS access keys in K8s Secrets and mount them as environment variables",
+      "Use the AWS SDK's default credential chain which automatically detects EKS and requests the correct role"
+    ],
+    correct: 1,
+    explanation: "IRSA (IAM Roles for Service Accounts) is the direct equivalent of ECS Task Roles. You create an IAM role with a trust policy for the EKS OIDC provider, annotate a K8s ServiceAccount with that role's ARN (eks.amazonaws.com/role-arn), and set that ServiceAccount on your pods. The EKS pod identity webhook injects STS credentials scoped to that specific role. This gives you pod-level IAM isolation — exactly like Task Roles in ECS. The node role approach (option A) is a security antipattern because every pod on the node gets the same broad permissions. EKS Pod Identity is the newer alternative to IRSA with a simpler setup, worth looking into as well."
+  },
+  {
+    category: "Advanced", catColor: "var(--accent2)",
+    question: "You're designing the observability stack for your K8s platform. Which combination provides metrics, logs, and traces with the most cohesive open-source experience?",
+    options: [
+      "Prometheus + Elasticsearch + Zipkin — the original cloud-native monitoring stack",
+      "Datadog agent DaemonSet for all three signals — unified commercial platform",
+      "Prometheus/Mimir (metrics) + Loki (logs) + Tempo (traces) with Grafana as the unified query layer, and OpenTelemetry for collection",
+      "CloudWatch Container Insights for metrics and logs, with X-Ray for traces"
+    ],
+    correct: 2,
+    explanation: "The Grafana LGTM stack (Loki, Grafana, Tempo, Mimir) has become the de facto open-source observability platform for K8s. Mimir is Prometheus-compatible long-term metrics storage, Loki is log aggregation designed to be cost-effective (indexes labels, not content), and Tempo is a traces backend. Grafana provides a single pane of glass that correlates all three signals. OpenTelemetry as the collection layer means you instrument once and can switch backends. Datadog is valid but commercial. CloudWatch works on EKS but you lose the K8s-native experience and community ecosystem (ServiceMonitor CRDs, Grafana dashboards, alerting rules as code)."
+  },
+  {
+    category: "Networking", catColor: "var(--accent5)",
+    question: "Your team is evaluating Ingress vs. Gateway API for HTTP routing. What is the Gateway API's key architectural advantage over Ingress?",
+    options: [
+      "Gateway API supports TLS termination while Ingress does not",
+      "Gateway API separates concerns with role-oriented resources: platform teams manage GatewayClass and Gateway (infrastructure), while application teams manage HTTPRoute (routing rules) — Ingress bundles everything into one resource",
+      "Gateway API is faster because it uses eBPF instead of proxy-based routing",
+      "Gateway API works without a controller while Ingress requires one"
+    ],
+    correct: 1,
+    explanation: "Gateway API's key innovation is role-oriented design. An Ingress resource conflates infrastructure concerns (which load balancer, which ports, TLS config) with application concerns (routing rules). Gateway API splits these: GatewayClass defines the implementation (managed by infra providers), Gateway configures the listener infrastructure (managed by platform/cluster operators), and HTTPRoute defines the routing rules (managed by application developers). This maps cleanly to organizational boundaries — platform teams control the gateway infrastructure, and dev teams manage their own routes via HTTPRoute resources in their namespaces. Both still require a controller to implement the actual routing."
+  },
+  {
+    category: "Operators", catColor: "var(--accent3)",
+    question: "You're building a custom Operator using Kubebuilder. Your controller needs to react when a user creates a new instance of your CRD. Which component in the controller-runtime architecture triggers your reconciliation logic?",
+    options: [
+      "The API server sends a direct HTTP callback to your controller's webhook endpoint",
+      "A Watch on the API server streams events to an informer, which enqueues the object's key into a work queue; the controller's Reconcile function is called with that key",
+      "A CronJob polls the API server every 30 seconds for new CRD instances",
+      "etcd triggers a database hook that invokes your controller's main function"
+    ],
+    correct: 1,
+    explanation: "This is the fundamental machinery of every K8s controller. The controller-runtime library sets up a Watch against the API server using informers (shared cached clients that maintain a local copy of the resources). When a resource changes, the informer places the object's namespace/name key onto a rate-limited work queue. The controller's Reconcile function is called with that key, reads the current state, compares it to desired state, and takes action. This event-driven, queue-based architecture ensures controllers are efficient (not polling), handle retries and backoff, and process events in order. Understanding this pattern is essential for building reliable operators."
+  },
+  {
+    category: "Security", catColor: "var(--accent5)",
+    question: "A container image in your cluster is running as root and has access to the host's PID namespace. What Kubernetes-native mechanism should you use to prevent this, and at what level does it enforce?",
+    options: [
+      "Set resource limits on the pod to restrict its capability",
+      "Apply Pod Security Standards at the namespace level (e.g., 'restricted' profile) which rejects pods that run as root or request host namespaces via a built-in admission controller",
+      "Configure NetworkPolicies to block pods running as root from accessing other services",
+      "Use a ServiceAccount with restricted RBAC — the pod won't be able to run as root"
+    ],
+    correct: 1,
+    explanation: "Pod Security Standards (PSS) enforced through Pod Security Admission (PSA) is the built-in mechanism for this. You label a namespace with pod-security.kubernetes.io/enforce: restricted, and the built-in admission controller rejects any pod that violates the restricted profile — including running as root, requesting host namespaces, privileged mode, and capabilities beyond a safe set. This replaced the deprecated PodSecurityPolicies. For more granular control, you'd use Kyverno or OPA/Gatekeeper, which can enforce custom rules. RBAC controls API access (who can create pods), not what the pods themselves can do at runtime."
+  },
+  {
+    category: "Scenario", catColor: "var(--accent4)",
+    question: "Your Go microservice takes 45 seconds to warm up (loading ML model into memory). During deployment, users see 502 errors. The Deployment has both liveness and readiness probes set to HTTP /healthz with initialDelaySeconds: 10. What's wrong?",
+    options: [
+      "The liveness probe fires at 10 seconds, finds the app not ready, kills the container, and it enters a crash loop — the readiness probe never gets a chance to work. Fix: increase the liveness probe's initialDelaySeconds and/or use a startup probe with a generous failureThreshold",
+      "The readiness probe is removing the pod from the Service too aggressively; increase its successThreshold to 5",
+      "The 502s are caused by the Ingress controller, not the probes; you need to configure a longer timeout on the Ingress",
+      "Both probes hitting the same endpoint causes a race condition; use different endpoints"
+    ],
+    correct: 0,
+    explanation: "This is one of the most common production issues in K8s. With initialDelaySeconds: 10, the liveness probe starts checking at 10 seconds. The app isn't ready until 45 seconds. After the default 3 failed checks (failureThreshold: 3, every 10s), kubelet kills the container at ~40 seconds. It restarts, and the cycle repeats — a CrashLoopBackOff. The modern fix is a startup probe: it runs during startup with a generous timeout (e.g., failureThreshold: 30, periodSeconds: 2 = 60 seconds), and liveness/readiness probes don't start until the startup probe succeeds. This cleanly separates slow startup from runtime health."
+  }
+];
+
+/* ── Quiz Engine ─────────────────────────────────────── */
+let shuffled = [];
+let answered = {};
+let score = 0;
+let quizInitialized = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function initQuiz() {
+  if (quizInitialized) return;
+  resetQuiz();
+}
+
+function resetQuiz() {
+  quizInitialized = true;
+  answered = {};
+  score = 0;
+  shuffled = shuffle(quizData);
+  renderQuiz();
+  updateProgress();
+  document.getElementById('quiz-bottom-actions').style.display = 'none';
+}
+
+function renderQuiz() {
+  const container = document.getElementById('quiz-questions');
+  const letters = ['A', 'B', 'C', 'D'];
+  container.innerHTML = shuffled.map((q, qi) => {
+    // Shuffle options with index tracking
+    const optionIndices = q.options.map((_, i) => i);
+    const shuffledOpts = shuffle(optionIndices);
+    // Store shuffled mapping on the data
+    q._shuffledOpts = shuffledOpts;
+
+    return `
+      <div class="quiz-q-card" id="quiz-q-${qi}">
+        <div class="quiz-q-num">Question ${qi + 1} of ${shuffled.length}
+          <span class="quiz-q-category" style="background:${q.catColor}15;color:${q.catColor}">${q.category}</span>
+        </div>
+        <div class="quiz-q-text">${q.question}</div>
+        <div class="quiz-options" id="quiz-opts-${qi}">
+          ${shuffledOpts.map((origIdx, dispIdx) => `
+            <button class="quiz-option" id="opt-${qi}-${origIdx}" onclick="selectAnswer(${qi}, ${origIdx})">
+              <span class="opt-letter">${letters[dispIdx]}</span>${q.options[origIdx]}
+            </button>
+          `).join('')}
+        </div>
+        <div class="quiz-explanation" id="quiz-expl-${qi}">
+          ${q.explanation}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectAnswer(qi, selectedOrigIdx) {
+  if (answered[qi] !== undefined) return; // already answered
+  answered[qi] = selectedOrigIdx;
+  const q = shuffled[qi];
+  const isCorrect = selectedOrigIdx === q.correct;
+
+  if (isCorrect) score++;
+
+  // Lock all options
+  const opts = document.querySelectorAll(`#quiz-opts-${qi} .quiz-option`);
+  opts.forEach(o => o.classList.add('locked'));
+
+  // Mark selected
+  const selectedBtn = document.getElementById(`opt-${qi}-${selectedOrigIdx}`);
+  selectedBtn.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  // If wrong, reveal the correct one
+  if (!isCorrect) {
+    document.getElementById(`opt-${qi}-${q.correct}`).classList.add('reveal-correct');
+  }
+
+  // Show explanation
+  const expl = document.getElementById(`quiz-expl-${qi}`);
+  expl.classList.add('show', isCorrect ? 'is-correct' : 'is-incorrect');
+
+  updateProgress();
+
+  // Scroll card into nice view
+  const card = document.getElementById(`quiz-q-${qi}`);
+  setTimeout(() => {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 100);
+}
+
+function updateProgress() {
+  const total = shuffled.length;
+  const answeredCount = Object.keys(answered).length;
+  const pct = (answeredCount / total) * 100;
+
+  document.getElementById('quiz-progress-fill').style.width = pct + '%';
+  document.getElementById('quiz-progress-label').textContent = `${answeredCount} / ${total} answered`;
+
+  const scoreColor = score > 0 ? (score / Math.max(answeredCount, 1) >= 0.7 ? 'var(--accent3)' : 'var(--accent4)') : 'var(--text-muted)';
+  document.getElementById('quiz-score-label').innerHTML = `Score: <span style="color:${scoreColor}">${score}/${answeredCount}</span>`;
+
+  if (answeredCount === total) {
+    document.getElementById('quiz-bottom-actions').style.display = 'flex';
+    const pctScore = Math.round((score / total) * 100);
+    let grade, gradeColor;
+    if (pctScore >= 90) { grade = 'Outstanding'; gradeColor = 'var(--accent3)'; }
+    else if (pctScore >= 75) { grade = 'Strong'; gradeColor = 'var(--accent)'; }
+    else if (pctScore >= 60) { grade = 'Developing'; gradeColor = 'var(--accent4)'; }
+    else { grade = 'Keep studying'; gradeColor = 'var(--accent5)'; }
+
+    const summary = document.createElement('div');
+    summary.className = 'quiz-score-summary';
+    summary.style.marginBottom = '24px';
+    summary.innerHTML = `
+      <div class="quiz-score-stat">
+        <div class="stat-num" style="color:${gradeColor}">${score}/${total}</div>
+        <div class="stat-label">Correct</div>
+      </div>
+      <div class="quiz-score-stat">
+        <div class="stat-num" style="color:${gradeColor}">${pctScore}%</div>
+        <div class="stat-label">Score</div>
+      </div>
+      <div class="quiz-score-stat">
+        <div class="stat-num" style="color:${gradeColor}">${grade}</div>
+        <div class="stat-label">Rating</div>
+      </div>
+    `;
+    const actions = document.getElementById('quiz-bottom-actions');
+    if (!document.getElementById('quiz-final-summary')) {
+      summary.id = 'quiz-final-summary';
+      actions.parentNode.insertBefore(summary, actions);
+    }
+  }
+}
+</script>
+</body>
+</html>
