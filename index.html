@@ -101,6 +101,23 @@
   }
 
   /* Navigation */
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: 12px;
+    z-index: 1000;
+    transform: translateY(-150%);
+    background: var(--surface);
+    border: 2px solid var(--accent);
+    border-radius: 8px;
+    color: var(--accent);
+    padding: 8px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    transition: transform 0.2s;
+  }
+  .skip-link:focus { transform: translateY(0); }
+
   .theme-toggle {
     position: absolute;
     top: 20px;
@@ -118,38 +135,109 @@
   }
   .theme-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
-  .nav {
-    position: sticky; top: 0; z-index: 100;
-    background: var(--nav-bg);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    padding: 0 20px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .nav::-webkit-scrollbar { display: none; }
-  .nav-inner {
-    display: flex;
-    gap: 4px;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 8px 0;
+  .mobile-menu-toggle {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 1000;
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    flex-direction: column;
     justify-content: center;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text);
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
   }
-  .nav-btn {
-    background: none; border: none; color: var(--text-muted);
-    font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
-    padding: 8px 14px; border-radius: 6px; cursor: pointer;
-    white-space: nowrap; transition: all 0.2s;
+  .mobile-menu-toggle:hover { border-color: var(--accent); color: var(--accent); }
+  .mobile-menu-toggle .bar {
+    width: 18px;
+    height: 2px;
+    border-radius: 999px;
+    background: currentColor;
+    transition: transform 0.2s, opacity 0.2s;
   }
-  .nav-btn:hover { background: var(--surface); color: var(--text); }
-  .nav-btn.active { background: var(--accent-soft); color: var(--accent); }
+  .mobile-menu-toggle[aria-expanded="true"] .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .mobile-menu-toggle[aria-expanded="true"] .bar:nth-child(2) { opacity: 0; }
+  .mobile-menu-toggle[aria-expanded="true"] .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  .learning-shell {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 24px 16px 80px;
+  }
+  .sidebar {
+    display: none;
+    margin-bottom: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .sidebar.open { display: block; }
+  .sidebar-kicker {
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .nav-group { margin-bottom: 18px; }
+  .nav-group:last-child { margin-bottom: 0; }
+  .nav-group-title {
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    margin: 0 0 8px;
+    text-transform: uppercase;
+  }
+  .nav-link {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.94rem;
+    padding: 9px 10px;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .nav-link:hover { background: var(--surface2); color: var(--text); }
+  .nav-link.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .nav-index {
+    flex: 0 0 auto;
+    color: inherit;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    opacity: 0.75;
+  }
+  .nav-text { min-width: 0; }
+  .content { min-width: 0; }
+
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 3px;
+  }
 
   /* Main layout */
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 24px 100px;
+  .container, .content {
+    width: 100%;
   }
 
   /* Sections */
@@ -259,14 +347,18 @@
     overflow: hidden;
   }
   .depth-header {
+    width: 100%;
     padding: 14px 20px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border: 0;
+    background: transparent;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.88rem;
     color: var(--accent3);
+    text-align: left;
     transition: background 0.2s;
   }
   .depth-header:hover { background: var(--accent3-soft); }
@@ -285,49 +377,31 @@
     grid-template-columns: 1fr 1fr;
     gap: 20px;
   }
-  @media (max-width: 900px) {
-    .nav { padding: 0 12px; }
-    .nav-inner { justify-content: flex-start; }
-    .two-col { grid-template-columns: 1fr; }
-    .flow-box { flex-basis: calc(50% - 6px); }
+  @media (min-width: 960px) {
+    .mobile-menu-toggle { display: none; }
+    .learning-shell {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      gap: 32px;
+      padding: 36px 24px 100px;
+    }
+    .sidebar {
+      display: block;
+      position: sticky;
+      top: 24px;
+      align-self: start;
+      max-height: calc(100vh - 48px);
+      overflow-y: auto;
+      margin-bottom: 0;
+    }
   }
 
-  @media (max-width: 768px) {
-    .theme-toggle { top: 12px; right: 12px; padding: 7px 11px; font-size: 0.72rem; }
-    .hero { padding: 56px 20px 42px; }
-    .hero::before { width: 520px; height: 520px; top: -160px; }
-    .hero p { font-size: 1rem; }
-    .container { padding: 28px 16px 72px; }
-    .section-title { font-size: clamp(1.55rem, 8vw, 2rem); }
-    .section-subtitle { margin-bottom: 24px; padding-bottom: 18px; }
-    .card, .quiz-q-card { padding: 20px; }
-    .card h3 { align-items: flex-start; flex-wrap: wrap; }
-    .map-grid { grid-template-columns: 1fr; gap: 6px; }
-    .map-left, .map-right { text-align: left; padding: 10px 12px; }
-    .map-arrow { transform: rotate(90deg); }
-    pre, .diagram { padding: 14px; font-size: 0.75rem; }
-    .depth-header { gap: 12px; padding: 14px 16px; }
-    .depth-body { padding: 0 16px 16px; }
-    .quiz-progress { align-items: stretch; flex-direction: column; gap: 10px; }
-    .quiz-progress-text { white-space: normal; }
-    .quiz-score-summary { gap: 12px; }
-    .quiz-actions { flex-direction: column; }
-    .quiz-btn { width: 100%; }
-  }
-
-  @media (max-width: 480px) {
-    body { line-height: 1.6; }
-    .hero { padding: 44px 16px 34px; }
-    .hero h1 { font-size: clamp(1.9rem, 14vw, 2.4rem); }
-    .nav-btn { padding: 9px 11px; font-size: 0.72rem; }
-    .container { padding: 22px 12px 56px; }
-    .card, .quiz-q-card { border-radius: 10px; padding: 16px; }
-    .card p, .card li { font-size: 0.9rem; }
-    .flow-container { display: grid; grid-template-columns: 1fr; }
-    .flow-box { min-width: 0; }
-    .callout { padding: 14px 16px; }
-    .quiz-score-stat { min-width: 100%; padding: 18px; }
-    .quiz-option { padding: 12px 14px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 
   /* Diagram */
@@ -578,46 +652,156 @@
   .quiz-btn-primary:hover {
     background: var(--surface2);
   }
+
+  .section-pager {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+  .pager-btn {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 72px;
+    justify-content: center;
+    padding: 14px 18px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    text-align: left;
+    transition: all 0.2s;
+  }
+  .pager-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .pager-btn-next { text-align: right; align-items: flex-end; }
+  .pager-label {
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .pager-title { font-size: 1rem; font-weight: 700; }
+  @media (min-width: 680px) {
+    .section-pager { grid-template-columns: 1fr 1fr; }
+    .pager-btn-next:only-child { grid-column: 2; }
+  }
+
+  @media (max-width: 900px) {
+    .two-col { grid-template-columns: 1fr; }
+    .flow-box { flex-basis: calc(50% - 6px); }
+  }
+
+  @media (max-width: 768px) {
+    .theme-toggle { top: 12px; right: 12px; padding: 7px 11px; font-size: 0.72rem; }
+    .hero { padding: 56px 20px 42px; }
+    .hero::before { width: 520px; height: 520px; top: -160px; }
+    .hero p { font-size: 1rem; }
+    .section-title { font-size: clamp(1.55rem, 8vw, 2rem); }
+    .section-subtitle { margin-bottom: 24px; padding-bottom: 18px; }
+    .card, .quiz-q-card { padding: 20px; }
+    .card h3 { align-items: flex-start; flex-wrap: wrap; }
+    .map-grid { grid-template-columns: 1fr; gap: 6px; }
+    .map-left, .map-right { text-align: left; padding: 10px 12px; }
+    .map-arrow { transform: rotate(90deg); }
+    pre, .diagram { padding: 14px; font-size: 0.75rem; }
+    .depth-header { gap: 12px; padding: 14px 16px; }
+    .depth-body { padding: 0 16px 16px; }
+    .quiz-progress { align-items: stretch; flex-direction: column; gap: 10px; }
+    .quiz-progress-text { white-space: normal; }
+    .quiz-score-summary { gap: 12px; }
+    .quiz-actions { flex-direction: column; }
+    .quiz-btn { width: 100%; }
+  }
+
+  @media (max-width: 480px) {
+    body { line-height: 1.6; }
+    .hero { padding: 44px 16px 34px; }
+    .hero h1 { font-size: clamp(1.9rem, 14vw, 2.4rem); }
+    .learning-shell { padding: 18px 12px 56px; }
+    .card, .quiz-q-card { border-radius: 10px; padding: 16px; }
+    .card p, .card li { font-size: 0.9rem; }
+    .flow-container { display: grid; grid-template-columns: 1fr; }
+    .flow-box { min-width: 0; }
+    .callout { padding: 14px 16px; }
+    .quiz-score-stat { min-width: 100%; padding: 18px; }
+    .quiz-option { padding: 12px 14px; }
+  }
 </style>
 </head>
 <body>
 
-<button class="theme-toggle" id="theme-toggle" type="button" onclick="toggleTheme()">Dark mode</button>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<button class="theme-toggle" id="theme-toggle" type="button">Dark mode</button>
 
-<div class="hero">
+<header class="hero">
   <h1>The Kubernetes Landscape</h1>
   <p>A complete guide for engineers transitioning from AWS ECS to the Kubernetes ecosystem — from core primitives to advanced tooling.</p>
-</div>
+</header>
 
-<nav class="nav">
-  <div class="nav-inner">
-    <button class="nav-btn active" onclick="showSection('mental-model')">Mental Model</button>
-    <button class="nav-btn" onclick="showSection('ecs-map')">ECS → K8s Map</button>
-    <button class="nav-btn" onclick="showSection('core')">Core Primitives</button>
-    <button class="nav-btn" onclick="showSection('workloads')">Workloads</button>
-    <button class="nav-btn" onclick="showSection('networking')">Networking</button>
-    <button class="nav-btn" onclick="showSection('storage')">Storage</button>
-    <button class="nav-btn" onclick="showSection('config')">Config &amp; Secrets</button>
-    <button class="nav-btn" onclick="showSection('kubectl')">kubectl</button>
-    <button class="nav-btn" onclick="showSection('helm')">Helm</button>
-    <button class="nav-btn" onclick="showSection('terraform')">Terraform</button>
-    <button class="nav-btn" onclick="showSection('operators')">Operators &amp; CRDs</button>
-    <button class="nav-btn" onclick="showSection('dev-tools')">Dev Tools</button>
-    <button class="nav-btn" onclick="showSection('advanced')">Advanced</button>
-    <button class="nav-btn" onclick="showSection('ecosystem')">Ecosystem Map</button>
-    <button class="nav-btn" onclick="showSection('real-world-systems')">Real Systems</button>
-    <button class="nav-btn" onclick="showSection('quiz')" style="color:var(--accent3);">🧪 Quiz</button>
-  </div>
-</nav>
+<button class="mobile-menu-toggle" id="sidebar-toggle" type="button" aria-expanded="false" aria-controls="lesson-sidebar" aria-label="Open learning path menu">
+  <span class="bar" aria-hidden="true"></span>
+  <span class="bar" aria-hidden="true"></span>
+  <span class="bar" aria-hidden="true"></span>
+</button>
 
-<main class="container" id="main-content">
+<div class="learning-shell">
+<aside class="sidebar" id="lesson-sidebar" aria-label="Learning path">
+  <div class="sidebar-kicker">Learning path</div>
+  <nav class="sidebar-nav" aria-label="Sections">
+    <div class="nav-group">
+      <h2 class="nav-group-title">Start Here</h2>
+      <button class="nav-link active" type="button" data-section="mental-model" aria-controls="mental-model" aria-current="page"><span class="nav-index">01</span><span class="nav-text">Mental Model</span></button>
+      <button class="nav-link" type="button" data-section="ecs-map" aria-controls="ecs-map"><span class="nav-index">02</span><span class="nav-text">ECS → K8s Map</span></button>
+    </div>
+    <div class="nav-group">
+      <h2 class="nav-group-title">Kubernetes Foundations</h2>
+      <button class="nav-link" type="button" data-section="core" aria-controls="core"><span class="nav-index">03</span><span class="nav-text">Core Primitives</span></button>
+      <button class="nav-link" type="button" data-section="workloads" aria-controls="workloads"><span class="nav-index">04</span><span class="nav-text">Workloads</span></button>
+      <button class="nav-link" type="button" data-section="networking" aria-controls="networking"><span class="nav-index">05</span><span class="nav-text">Networking</span></button>
+      <button class="nav-link" type="button" data-section="storage" aria-controls="storage"><span class="nav-index">06</span><span class="nav-text">Storage</span></button>
+      <button class="nav-link" type="button" data-section="config" aria-controls="config"><span class="nav-index">07</span><span class="nav-text">Config &amp; Secrets</span></button>
+    </div>
+    <div class="nav-group">
+      <h2 class="nav-group-title">Day-to-Day Operations</h2>
+      <button class="nav-link" type="button" data-section="kubectl" aria-controls="kubectl"><span class="nav-index">08</span><span class="nav-text">kubectl</span></button>
+      <button class="nav-link" type="button" data-section="helm" aria-controls="helm"><span class="nav-index">09</span><span class="nav-text">Helm</span></button>
+      <button class="nav-link" type="button" data-section="terraform" aria-controls="terraform"><span class="nav-index">10</span><span class="nav-text">Terraform</span></button>
+    </div>
+    <div class="nav-group">
+      <h2 class="nav-group-title">Platform Engineering</h2>
+      <button class="nav-link" type="button" data-section="operators" aria-controls="operators"><span class="nav-index">11</span><span class="nav-text">Operators &amp; CRDs</span></button>
+      <button class="nav-link" type="button" data-section="dev-tools" aria-controls="dev-tools"><span class="nav-index">12</span><span class="nav-text">Dev Tools</span></button>
+      <button class="nav-link" type="button" data-section="advanced" aria-controls="advanced"><span class="nav-index">13</span><span class="nav-text">Advanced</span></button>
+    </div>
+    <div class="nav-group">
+      <h2 class="nav-group-title">Synthesis</h2>
+      <button class="nav-link" type="button" data-section="ecosystem" aria-controls="ecosystem"><span class="nav-index">14</span><span class="nav-text">Ecosystem Map</span></button>
+      <button class="nav-link" type="button" data-section="real-world-systems" aria-controls="real-world-systems"><span class="nav-index">15</span><span class="nav-text">Real Systems</span></button>
+      <button class="nav-link" type="button" data-section="quiz" aria-controls="quiz"><span class="nav-index">16</span><span class="nav-text">Knowledge Check</span></button>
+    </div>
+  </nav>
+</aside>
+
+<main class="content" id="main-content" tabindex="-1">
 
 <!-- ============================================================ -->
 <!-- MENTAL MODEL -->
 <!-- ============================================================ -->
-<div id="mental-model" class="section active">
-  <h2 class="section-title">The Mental Model Shift</h2>
+<section id="mental-model" class="section active">
+  <h2 class="section-title" tabindex="-1">The Mental Model Shift</h2>
   <p class="section-subtitle">What changes when you move from ECS to Kubernetes — and what stays the same.</p>
+
+  <div class="card">
+    <h3><span class="icon">🧭</span> Recommended Learning Path</h3>
+    <p><strong>Start with the mental model, then map ECS concepts to Kubernetes concepts.</strong> After that, learn how apps run, how traffic reaches them, how config/state works, how operators package and automate systems, and finally how those pieces combine in real systems like Airflow and Spark.</p>
+    <p>Use the sidebar as the curriculum and the previous/next controls as the guided path. The ecosystem map is reference material — not a memorization list.</p>
+  </div>
 
   <div class="card">
     <h3><span class="icon">🧠</span> The Big Idea</h3>
@@ -664,15 +848,15 @@
     <h3><span class="icon">⚡</span> Key Mindset Shifts</h3>
     <p><strong>Everything is a resource with an API.</strong> In ECS, you work with a fixed set of AWS constructs. In K8s, every concept — a pod, a network policy, a role binding — is a typed resource with a versioned API, stored in etcd, and manageable through kubectl. This uniform interface is powerful.</p>
     <p><strong>YAML is your language.</strong> You'll write manifests for everything. They follow a consistent structure: <code>apiVersion</code>, <code>kind</code>, <code>metadata</code>, <code>spec</code>. Get comfortable reading and writing these — they're the source of truth.</p>
-    <p><strong>Namespaces replace accounts.</strong> Where you might use separate AWS accounts for isolation, K8s uses namespaces within a cluster (plus RBAC) for multi-tenancy and logical separation.</p>
+    <p><strong>Namespaces are logical boundaries, not AWS accounts.</strong> They replace some uses of separate ECS clusters or accounts for organization, but hard isolation still needs RBAC, NetworkPolicy, quotas, admission policy, and sometimes separate clusters/accounts.</p>
     <p><strong>You own more of the stack.</strong> ECS manages load balancer integration, service discovery, and IAM tightly. In K8s, you configure Ingress controllers, Service meshes, and RBAC explicitly. More power, more responsibility.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- ECS MAP -->
 <!-- ============================================================ -->
-<div id="ecs-map" class="section">
+<section id="ecs-map" class="section">
   <h2 class="section-title">ECS → Kubernetes Mapping</h2>
   <p class="section-subtitle">Direct conceptual translations from what you know to what you're learning.</p>
 
@@ -681,14 +865,14 @@
     <div class="map-grid">
       <div class="map-left">ECS Cluster</div><div class="map-arrow">→</div><div class="map-right">K8s Cluster (control plane + nodes)</div>
       <div class="map-left">EC2 Instance (in ECS)</div><div class="map-arrow">→</div><div class="map-right">Node</div>
-      <div class="map-left">Fargate</div><div class="map-arrow">→</div><div class="map-right">Virtual Kubelet / Fargate on EKS / serverless runtimes</div>
+      <div class="map-left">Fargate</div><div class="map-arrow">→</div><div class="map-right">EKS Fargate profiles / serverless pod execution, with node-level limitations</div>
       <div class="map-left">Task Definition</div><div class="map-arrow">→</div><div class="map-right">Pod spec (within a Deployment/Job manifest)</div>
       <div class="map-left">Task</div><div class="map-arrow">→</div><div class="map-right">Pod</div>
       <div class="map-left">Container Definition</div><div class="map-arrow">→</div><div class="map-right">Container spec (inside a Pod)</div>
       <div class="map-left">ECS Service</div><div class="map-arrow">→</div><div class="map-right">Deployment + Service</div>
       <div class="map-left">Service desired count</div><div class="map-arrow">→</div><div class="map-right">replicas: N in Deployment spec</div>
-      <div class="map-left">Task Role (IAM)</div><div class="map-arrow">→</div><div class="map-right">ServiceAccount + RBAC (or IRSA on EKS)</div>
-      <div class="map-left">ALB / Target Group</div><div class="map-arrow">→</div><div class="map-right">Service (type: LoadBalancer) + Ingress</div>
+      <div class="map-left">Task Role (IAM)</div><div class="map-arrow">→</div><div class="map-right">EKS Pod Identity or IRSA via ServiceAccount; RBAC is separate</div>
+      <div class="map-left">ALB / Target Group</div><div class="map-arrow">→</div><div class="map-right">Ingress/Gateway + AWS Load Balancer Controller + Service endpoints</div>
       <div class="map-left">ECS Service Discovery</div><div class="map-arrow">→</div><div class="map-right">CoreDNS (built-in) — every Service gets a DNS name</div>
       <div class="map-left">Parameter Store / Secrets Manager</div><div class="map-arrow">→</div><div class="map-right">ConfigMap + Secret (or External Secrets Operator)</div>
       <div class="map-left">CloudWatch Logs</div><div class="map-arrow">→</div><div class="map-right">kubectl logs + log aggregation (Fluentd/Loki/etc)</div>
@@ -705,17 +889,17 @@
 
   <div class="card">
     <h3><span class="icon">⚠️</span> Concepts That Don't Map Cleanly</h3>
-    <p><strong>Namespaces:</strong> ECS doesn't have a direct equivalent. Namespaces are logical partitions within a cluster — think of them like lightweight AWS accounts. They scope resource names and enable RBAC isolation. Most teams use namespaces per-environment or per-team.</p>
+    <p><strong>Namespaces:</strong> ECS doesn't have a direct equivalent. Namespaces are logical partitions within a cluster, not hard account-level security boundaries. They scope resource names and enable RBAC, quotas, and policy. Most teams use namespaces per-environment or per-team, then use separate clusters/accounts for stronger isolation.</p>
     <p><strong>Labels &amp; Selectors:</strong> K8s uses key-value labels on every resource, and selectors to query them. This is how Services find Pods, how Deployments manage ReplicaSets, and how you organize everything. ECS tags are similar but far less central to the system.</p>
     <p><strong>DaemonSets:</strong> Runs exactly one Pod per node. There's no ECS equivalent — this is used for node-level agents like log collectors, monitoring agents, or CNI plugins.</p>
     <p><strong>StatefulSets:</strong> For stateful workloads needing stable identity, ordered deployment, and persistent storage. ECS can do persistent storage with EBS, but doesn't provide the same identity guarantees.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- CORE PRIMITIVES -->
 <!-- ============================================================ -->
-<div id="core" class="section">
+<section id="core" class="section">
   <h2 class="section-title">Core Primitives</h2>
   <p class="section-subtitle">The fundamental building blocks everything else is built on.</p>
 
@@ -724,11 +908,11 @@
     <p>A Node is a machine (VM or bare metal) in your cluster that runs workloads. Each node runs three things: the <strong>kubelet</strong> (an agent that receives instructions from the API server and manages pods), <strong>kube-proxy</strong> (handles network rules so pods can communicate), and a <strong>container runtime</strong> (usually containerd — Docker is deprecated as a runtime).</p>
     <p>Nodes have allocatable resources (CPU, memory, ephemeral storage) and can be labeled and tainted to control scheduling. For example, you might label GPU nodes and use a nodeSelector to schedule ML workloads there.</p>
     <div class="depth-toggle">
-      <div class="depth-header" onclick="toggleDepth(this)">
+      <button class="depth-header" type="button" data-depth-toggle aria-expanded="false" aria-controls="depth-node-lifecycle">
         <span>↳ Deep dive: Node lifecycle &amp; management</span>
-        <span class="arrow">▸</span>
-      </div>
-      <div class="depth-body">
+        <span class="arrow" aria-hidden="true">▸</span>
+      </button>
+      <div class="depth-body" id="depth-node-lifecycle">
         <p>Nodes register themselves with the control plane. The kubelet sends heartbeats; if it stops, the node is marked <code>NotReady</code> and pods are eventually evicted (after the <code>pod-eviction-timeout</code>, default 5 minutes). You can <code>cordon</code> a node (prevent new scheduling) and <code>drain</code> it (evict all pods gracefully) for maintenance.</p>
         <p><strong>Taints and Tolerations</strong> are the counterpart to labels/selectors for node scheduling. A taint says "don't schedule here unless you tolerate this." This is how you reserve GPU nodes, keep master nodes free of workloads, or handle spot/preemptible instances.</p>
 <pre># Taint a node
@@ -750,11 +934,11 @@ tolerations:
     <p>Pods are <strong>ephemeral by design</strong>. They can be killed, restarted, or rescheduled at any time. You should never create Pods directly in production — instead, you create a Deployment (or StatefulSet, DaemonSet, Job) which creates Pods for you and handles their lifecycle.</p>
 
     <div class="depth-toggle">
-      <div class="depth-header" onclick="toggleDepth(this)">
+      <button class="depth-header" type="button" data-depth-toggle aria-expanded="false" aria-controls="depth-pod-internals">
         <span>↳ Deep dive: Pod internals and multi-container patterns</span>
-        <span class="arrow">▸</span>
-      </div>
-      <div class="depth-body">
+        <span class="arrow" aria-hidden="true">▸</span>
+      </button>
+      <div class="depth-body" id="depth-pod-internals">
         <p>Every pod gets its own IP address in the cluster. Containers within a pod communicate via localhost. This enables powerful multi-container patterns:</p>
         <p><strong>Sidecar:</strong> A helper container alongside your main container. Classic examples: Envoy proxy for service mesh, a log shipping agent, or a secrets-refreshing sidecar. (K8s 1.28+ added native sidecar container support via <code>restartPolicy: Always</code> in init containers.)</p>
         <p><strong>Init Container:</strong> Runs to completion before the main containers start. Use for setup: database migrations, waiting for dependencies, populating shared volumes.</p>
@@ -817,12 +1001,12 @@ tolerations:
   <span class="key">prometheus.io/scrape:</span> <span class="string">"true"</span>
   <span class="key">deploy.link:</span> <span class="string">"https://ci.example.com/builds/421"</span></pre>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- WORKLOADS -->
 <!-- ============================================================ -->
-<div id="workloads" class="section">
+<section id="workloads" class="section">
   <h2 class="section-title">Workload Resources</h2>
   <p class="section-subtitle">The controllers that manage your Pods' lifecycles.</p>
 
@@ -879,11 +1063,11 @@ tolerations:
         - <span class="key">containerPort:</span> <span class="string">8080</span></pre>
 
     <div class="depth-toggle">
-      <div class="depth-header" onclick="toggleDepth(this)">
+      <button class="depth-header" type="button" data-depth-toggle aria-expanded="false" aria-controls="depth-deployment-strategies">
         <span>↳ Deep dive: Deployment strategies &amp; rollbacks</span>
-        <span class="arrow">▸</span>
-      </div>
-      <div class="depth-body">
+        <span class="arrow" aria-hidden="true">▸</span>
+      </button>
+      <div class="depth-body" id="depth-deployment-strategies">
         <p>K8s natively supports <strong>RollingUpdate</strong> (gradual) and <strong>Recreate</strong> (kill all, then create all). For canary or blue-green deployments, you typically use service meshes (Istio, Linkerd) or progressive delivery tools (Argo Rollouts, Flagger) that layer on top of Deployments.</p>
         <p>Every Deployment change is recorded. You can rollback instantly:</p>
 <pre>kubectl rollout history deployment/api-server
@@ -918,12 +1102,12 @@ kubectl rollout status deployment/api-server          <span class="comment"># wa
             <span class="key">image:</span> <span class="string">backup-tool:latest</span>
           <span class="key">restartPolicy:</span> <span class="string">OnFailure</span></pre>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- NETWORKING -->
 <!-- ============================================================ -->
-<div id="networking" class="section">
+<section id="networking" class="section">
   <h2 class="section-title">Networking</h2>
   <p class="section-subtitle">How traffic flows in a K8s cluster — this is where ECS and K8s differ most.</p>
 
@@ -1004,12 +1188,12 @@ kubectl rollout status deployment/api-server          <span class="comment"># wa
     <p>A service mesh adds a proxy sidecar (usually Envoy) to every pod, giving you mTLS (encrypted pod-to-pod communication), fine-grained traffic routing (canary deploys, A/B testing), observability (distributed tracing, metrics per-request), and circuit breaking. It's like having an ALB between every pair of services.</p>
     <p><strong>Istio</strong> is feature-rich but complex. <strong>Linkerd</strong> is lighter and simpler. <strong>Cilium</strong> does mesh at the eBPF/kernel level without sidecars. At a core K8s infra shop, you'll almost certainly encounter one of these.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- STORAGE -->
 <!-- ============================================================ -->
-<div id="storage" class="section">
+<section id="storage" class="section">
   <h2 class="section-title">Storage</h2>
   <p class="section-subtitle">Persistent and ephemeral storage for stateful workloads.</p>
 
@@ -1039,12 +1223,12 @@ kubectl rollout status deployment/api-server          <span class="comment"># wa
     <p><strong>hostPath:</strong> Mounts a directory from the host node. Use sparingly — breaks portability. Mainly for DaemonSets that need to read node-level files (logs, docker socket).</p>
     <p><strong>CSI (Container Storage Interface):</strong> The plugin standard for storage. AWS EBS CSI Driver, EFS CSI Driver, etc. — these are what let K8s provision cloud storage dynamically.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- CONFIG & SECRETS -->
 <!-- ============================================================ -->
-<div id="config" class="section">
+<section id="config" class="section">
   <h2 class="section-title">Config &amp; Secrets</h2>
   <p class="section-subtitle">How K8s handles configuration, environment variables, and sensitive data.</p>
 
@@ -1073,12 +1257,12 @@ kubectl rollout status deployment/api-server          <span class="comment"># wa
       <strong>Critical gotcha:</strong> K8s Secrets are only base64-encoded, not encrypted. Anyone with RBAC access to read Secrets in a namespace can decode them trivially. This is why external secrets management (Vault, cloud KMS) is standard practice in production.
     </div>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- KUBECTL -->
 <!-- ============================================================ -->
-<div id="kubectl" class="section">
+<section id="kubectl" class="section">
   <h2 class="section-title">kubectl — Your Primary Tool</h2>
   <p class="section-subtitle">The CLI that talks to the K8s API server. Your equivalent of the aws ecs CLI, but for everything.</p>
 
@@ -1130,12 +1314,12 @@ kubectl diff -f manifest.yaml            <span class="comment"># show what would
     <h3><span class="icon">📋</span> kubeconfig Explained</h3>
     <p>Your kubeconfig file (<code>~/.kube/config</code>) stores cluster connection details: server addresses, authentication credentials, and contexts (a named combo of cluster + user + namespace). When you run <code>aws eks update-kubeconfig</code>, it adds the EKS cluster to this file. You can have dozens of clusters configured and switch between them with <code>kubectl config use-context</code>.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- HELM -->
 <!-- ============================================================ -->
-<div id="helm" class="section">
+<section id="helm" class="section">
   <h2 class="section-title">Helm — The Package Manager</h2>
   <p class="section-subtitle">Think of Helm as "apt/yum for Kubernetes" — it packages, templates, and manages K8s manifests.</p>
 
@@ -1189,12 +1373,12 @@ helm search repo postgresql</pre>
     <p><strong>Kustomize</strong> (built into kubectl as <code>kubectl apply -k</code>) uses a template-free overlay approach — you start with base manifests and layer on patches for each environment. No templating language, just structured YAML overlays. Many teams use Kustomize for simple internal apps and Helm for third-party software.</p>
     <p>They're not mutually exclusive — you can use <code>helm template</code> to render manifests, then manage them with Kustomize overlays.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- TERRAFORM -->
 <!-- ============================================================ -->
-<div id="terraform" class="section">
+<section id="terraform" class="section">
   <h2 class="section-title">Terraform &amp; Infrastructure</h2>
   <p class="section-subtitle">Where Terraform fits in the K8s world — and where it doesn't.</p>
 
@@ -1250,12 +1434,12 @@ helm search repo postgresql</pre>
     <p><strong>Crossplane:</strong> Manages cloud infrastructure using K8s-native CRDs. You define an RDS instance as a K8s manifest, and Crossplane's controllers provision it. "Infrastructure as K8s resources." Popular at K8s-native shops because it unifies the management plane.</p>
     <p><strong>CDK for Terraform (CDKTF):</strong> Write Terraform in TypeScript/Python/Go. Best of both worlds if your team knows Terraform but wants real language features.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- OPERATORS & CRDs -->
 <!-- ============================================================ -->
-<div id="operators" class="section">
+<section id="operators" class="section">
   <h2 class="section-title">Operators &amp; CRDs</h2>
   <p class="section-subtitle">The pattern that makes Kubernetes infinitely extensible — and what makes your new job interesting.</p>
 
@@ -1286,11 +1470,11 @@ helm search repo postgresql</pre>
     </div>
 
     <div class="depth-toggle">
-      <div class="depth-header" onclick="toggleDepth(this)">
+      <button class="depth-header" type="button" data-depth-toggle aria-expanded="false" aria-controls="depth-building-operators">
         <span>↳ Deep dive: Building Operators</span>
-        <span class="arrow">▸</span>
-      </div>
-      <div class="depth-body">
+        <span class="arrow" aria-hidden="true">▸</span>
+      </button>
+      <div class="depth-body" id="depth-building-operators">
         <p>Operator frameworks provide scaffolding and libraries:</p>
         <p><strong>Kubebuilder:</strong> The standard Go framework. Uses controller-runtime. Generates CRD manifests, RBAC, and project scaffolding. Most production operators use this.</p>
         <p><strong>Operator SDK:</strong> Built on Kubebuilder with extra tooling (OLM integration, Ansible/Helm-based operators). From Red Hat/the Operator Framework project.</p>
@@ -1309,12 +1493,12 @@ helm search repo postgresql</pre>
     <p><strong>ArgoCD:</strong> GitOps controller. Application CRD defines what to deploy from which git repo.</p>
     <p><strong>Crossplane:</strong> Cloud infrastructure as CRDs. Provisions RDS, S3, VPCs via K8s manifests.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- DEV TOOLS -->
 <!-- ============================================================ -->
-<div id="dev-tools" class="section">
+<section id="dev-tools" class="section">
   <h2 class="section-title">Development &amp; Build Tools</h2>
   <p class="section-subtitle">The local development and CI/CD toolchain for working with Kubernetes.</p>
 
@@ -1382,12 +1566,12 @@ KO_DOCKER_REPO=kind.local ko apply -f config/</pre>
     <p><strong>kaniko:</strong> Builds Docker images inside a container without Docker daemon. Essential for building images in K8s-based CI (you can't run Docker-in-Docker easily in K8s pods).</p>
     <p><strong>Earthly:</strong> Makefile + Dockerfile hybrid. Reproducible builds that work locally and in CI identically.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- ADVANCED -->
 <!-- ============================================================ -->
-<div id="advanced" class="section">
+<section id="advanced" class="section">
   <h2 class="section-title">Advanced Concepts</h2>
   <p class="section-subtitle">Patterns and systems you'll encounter at a core K8s infrastructure shop.</p>
 
@@ -1441,12 +1625,12 @@ KO_DOCKER_REPO=kind.local ko apply -f config/</pre>
     <p><strong>Submariner / Skupper:</strong> Cross-cluster networking, letting Services in one cluster reach Services in another.</p>
     <p><strong>vCluster:</strong> Virtual clusters — lightweight K8s clusters that run inside a host cluster's namespace. Great for multi-tenancy, CI environments, and dev isolation.</p>
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- ECOSYSTEM MAP -->
 <!-- ============================================================ -->
-<div id="ecosystem" class="section">
+<section id="ecosystem" class="section">
   <h2 class="section-title">The Ecosystem at a Glance</h2>
   <p class="section-subtitle">A categorized map of the tools, projects, and systems you'll encounter.</p>
 
@@ -1508,14 +1692,18 @@ KO_DOCKER_REPO=kind.local ko apply -f config/</pre>
   <div class="callout">
     <strong>Final thought:</strong> The K8s ecosystem can feel overwhelming, but remember — you already understand the core problem (running containers reliably at scale). Everything in K8s is just a more explicit, composable, and extensible way of solving the same problems you solved in ECS. The learning curve is steep at first, but the mental model clicks fast once you see the reconciliation loop pattern repeating everywhere.
   </div>
-</div>
+</section>
 
 <!-- ============================================================ -->
 <!-- REAL WORLD SYSTEMS -->
 <!-- ============================================================ -->
-<div id="real-world-systems" class="section">
+<section id="real-world-systems" class="section">
   <h2 class="section-title">Large-Scale Systems: Spark and Airflow</h2>
   <p class="section-subtitle">A real-world data platform mapped across ECS and Kubernetes — the matrix that makes the two worlds click.</p>
+
+  <div class="callout">
+    <strong>Capstone:</strong> this is where the primitives connect. Read this as the synthesis of workloads, networking, identity, scaling, operators, observability, and platform ownership.
+  </div>
 
   <div class="card">
     <h3><span class="icon">🧩</span> The Unlock: Platform vs Workload</h3>
@@ -1662,40 +1850,52 @@ KO_DOCKER_REPO=kind.local ko apply -f config/</pre>
   <div class="callout callout-warn">
     <strong>Decision rule:</strong> use ECS when the platform is mostly AWS-native services, stable long-running containers, and simple scheduled tasks. Use Kubernetes when the system has heterogeneous jobs, dynamic resources, per-job isolation, operators, multi-team boundaries, and a need to make platform behavior declarative.
   </div>
-</div>
+</section>
 
-</main><!-- /container -->
-
-<!-- QUIZ SECTION — rendered by JS outside .container for full control -->
-<main class="container" id="quiz-container" style="display:none;">
-<div id="quiz" class="section active">
-  <h2 class="section-title">Knowledge Check</h2>
-  <p class="section-subtitle">25 questions spanning core concepts, real-world scenarios, and advanced strategies. Shuffled fresh every time you load.</p>
+<!-- QUIZ SECTION — final step in the learning path -->
+<section id="quiz" class="section">
+  <h2 class="section-title" tabindex="-1">Knowledge Check</h2>
+  <p class="section-subtitle"><span id="quiz-count-label">Questions</span> spanning core concepts, real-world scenarios, and advanced strategies. Shuffled fresh every time you load.</p>
 
   <div class="quiz-progress">
-    <div class="quiz-progress-text" id="quiz-progress-label">0 / 25 answered</div>
-    <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div></div>
+    <div class="quiz-progress-text" id="quiz-progress-label">0 answered</div>
+    <div class="quiz-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-label="Quiz progress"><div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div></div>
     <div class="quiz-progress-text" id="quiz-score-label">Score: 0</div>
   </div>
 
   <div id="quiz-questions"></div>
 
   <div class="quiz-actions" id="quiz-bottom-actions" style="display:none;">
-    <button class="quiz-btn quiz-btn-primary" onclick="resetQuiz()">🔄 Reshuffle &amp; Retry</button>
-    <button class="quiz-btn" onclick="showSection('mental-model')">← Back to Guide</button>
+    <button class="quiz-btn quiz-btn-primary" type="button" id="quiz-reset-btn">Reshuffle &amp; Retry</button>
+    <button class="quiz-btn" type="button" data-target="mental-model">Back to Start</button>
   </div>
-</div>
+</section>
+
+<nav class="section-pager" id="section-pager" aria-label="Section navigation"></nav>
 </main>
+</div>
 
 <script>
-/* ── Theme toggle ────────────────────────────────────── */
-const savedTheme = localStorage.getItem('theme');
+/* ── App navigation ──────────────────────────────────── */
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function readSavedTheme() {
+  try { return localStorage.getItem('theme'); }
+  catch { return null; }
+}
+
+function saveTheme(theme) {
+  try { localStorage.setItem('theme', theme); }
+  catch { /* ignore restricted storage */ }
+}
+
+const savedTheme = readSavedTheme();
 if (savedTheme === 'dark') document.body.classList.add('dark-mode');
 updateThemeToggle();
 
 function toggleTheme() {
   document.body.classList.toggle('dark-mode');
-  localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+  saveTheme(document.body.classList.contains('dark-mode') ? 'dark' : 'light');
   updateThemeToggle();
 }
 
@@ -1705,39 +1905,160 @@ function updateThemeToggle() {
   toggle.textContent = document.body.classList.contains('dark-mode') ? 'Light mode' : 'Dark mode';
 }
 
-/* ── Section navigation ──────────────────────────────── */
-function showSection(id) {
-  // Hide all main sections
-  document.querySelectorAll('.container > .section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+function getNavLinks() {
+  return Array.from(document.querySelectorAll('.nav-link[data-section]'));
+}
 
-  // Handle quiz specially since it's in its own container
-  const mainContainer = document.getElementById('main-content');
-  const quizContainer = document.getElementById('quiz-container');
+function getSectionOrder() {
+  return getNavLinks().map(link => link.dataset.section);
+}
 
-  if (id === 'quiz') {
-    mainContainer.style.display = 'none';
-    quizContainer.style.display = 'block';
-    document.getElementById('quiz').classList.add('active');
-    initQuiz();
-  } else {
-    mainContainer.style.display = 'block';
-    quizContainer.style.display = 'none';
-    document.getElementById(id).classList.add('active');
+function getSectionTitle(id) {
+  const link = document.querySelector(`.nav-link[data-section="${id}"] .nav-text`);
+  return link ? link.textContent.trim() : id;
+}
+
+function closeSidebarOnMobile() {
+  const sidebar = document.getElementById('lesson-sidebar');
+  const toggle = document.getElementById('sidebar-toggle');
+  if (window.matchMedia('(min-width: 960px)').matches) return;
+  sidebar?.classList.remove('open');
+  toggle?.setAttribute('aria-expanded', 'false');
+  toggle?.setAttribute('aria-label', 'Open learning path menu');
+}
+
+function updateHash(id) {
+  const nextHash = `#${id}`;
+  if (window.location.hash !== nextHash) {
+    history.pushState(null, '', nextHash);
+  }
+}
+
+function focusActiveSection(section) {
+  const heading = section.querySelector('.section-title');
+  const target = heading || document.getElementById('main-content');
+  if (!target) return;
+  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus({ preventScroll: true });
+}
+
+function renderPager(id) {
+  const pager = document.getElementById('section-pager');
+  if (!pager) return;
+
+  const order = getSectionOrder();
+  const idx = order.indexOf(id);
+  const prevId = order[idx - 1];
+  const nextId = order[idx + 1];
+  const parts = [];
+
+  if (prevId) {
+    parts.push(`<button class="pager-btn pager-btn-prev" type="button" data-target="${prevId}">
+      <span class="pager-label">Previous</span>
+      <span class="pager-title">${getSectionTitle(prevId)}</span>
+    </button>`);
   }
 
-  // Highlight active nav button
-  document.querySelectorAll('.nav-btn').forEach(b => {
-    if (b.getAttribute('onclick').includes("'" + id + "'")) b.classList.add('active');
+  if (nextId) {
+    parts.push(`<button class="pager-btn pager-btn-next" type="button" data-target="${nextId}">
+      <span class="pager-label">Next</span>
+      <span class="pager-title">${getSectionTitle(nextId)}</span>
+    </button>`);
+  } else {
+    parts.push(`<button class="pager-btn pager-btn-next" type="button" data-target="mental-model">
+      <span class="pager-label">Start over</span>
+      <span class="pager-title">Mental Model</span>
+    </button>`);
+  }
+
+  pager.innerHTML = parts.join('');
+}
+
+function showSection(id, options = {}) {
+  const target = document.getElementById(id);
+  if (!target || !target.classList.contains('section')) return;
+
+  document.querySelectorAll('.section').forEach(section => {
+    section.classList.toggle('active', section.id === id);
   });
 
-  window.scrollTo({ top: document.querySelector('.nav').offsetTop, behavior: 'smooth' });
+  getNavLinks().forEach(link => {
+    const isActive = link.dataset.section === id;
+    link.classList.toggle('active', isActive);
+    if (isActive) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  });
+
+  if (id === 'quiz') initQuiz();
+  renderPager(id);
+  closeSidebarOnMobile();
+  if (options.hash !== false) updateHash(id);
+  if (options.focus !== false) focusActiveSection(target);
+
+  if (options.scroll !== false) {
+    document.getElementById('main-content')?.scrollIntoView({
+      behavior: prefersReducedMotion ? 'auto' : 'smooth',
+      block: 'start'
+    });
+  }
 }
 
-function toggleDepth(header) {
-  header.classList.toggle('open');
-  header.nextElementSibling.classList.toggle('open');
+function toggleDepth(button) {
+  const body = document.getElementById(button.getAttribute('aria-controls'));
+  if (!body) return;
+  const isOpen = button.getAttribute('aria-expanded') === 'true';
+  button.setAttribute('aria-expanded', String(!isOpen));
+  button.classList.toggle('open', !isOpen);
+  body.classList.toggle('open', !isOpen);
 }
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('lesson-sidebar');
+  const toggle = document.getElementById('sidebar-toggle');
+  if (!sidebar || !toggle) return;
+  const isOpen = sidebar.classList.toggle('open');
+  toggle.setAttribute('aria-expanded', String(isOpen));
+  toggle.setAttribute('aria-label', isOpen ? 'Close learning path menu' : 'Open learning path menu');
+}
+
+function initApp() {
+  const initialId = window.location.hash.slice(1) || 'mental-model';
+  const initialSection = document.getElementById(initialId);
+  showSection(initialSection?.classList.contains('section') ? initialId : 'mental-model', { hash: false, focus: false, scroll: false });
+}
+
+document.addEventListener('click', event => {
+  const sectionLink = event.target.closest('[data-section]');
+  if (sectionLink) {
+    showSection(sectionLink.dataset.section);
+    return;
+  }
+
+  const pagerLink = event.target.closest('[data-target]');
+  if (pagerLink) {
+    showSection(pagerLink.dataset.target);
+    return;
+  }
+
+  const depthButton = event.target.closest('[data-depth-toggle]');
+  if (depthButton) {
+    toggleDepth(depthButton);
+    return;
+  }
+
+  const quizOption = event.target.closest('[data-quiz-option]');
+  if (quizOption) {
+    selectAnswer(Number(quizOption.dataset.question), Number(quizOption.dataset.option));
+  }
+});
+
+document.getElementById('theme-toggle')?.addEventListener('click', toggleTheme);
+document.getElementById('sidebar-toggle')?.addEventListener('click', toggleSidebar);
+document.getElementById('quiz-reset-btn')?.addEventListener('click', resetQuiz);
+window.addEventListener('hashchange', () => {
+  const id = window.location.hash.slice(1);
+  if (id) showSection(id, { hash: false });
+});
 
 /* ── Quiz Data ───────────────────────────────────────── */
 const quizData = [
@@ -1974,12 +2295,12 @@ const quizData = [
     question: "Your company is migrating from ECS to EKS. The ECS services use IAM Task Roles for AWS API access (reading from S3, writing to SQS). What's the equivalent mechanism on EKS?",
     options: [
       "Attach IAM policies directly to the EKS node IAM role — all pods on the node share the same permissions",
-      "Use IRSA (IAM Roles for Service Accounts): create a K8s ServiceAccount annotated with an IAM role ARN, and assign it to your pods. AWS STS provides scoped credentials to each pod.",
+      "Use EKS Pod Identity or IRSA: bind an IAM role to a K8s ServiceAccount and assign that ServiceAccount to your pods so AWS provides scoped credentials per workload.",
       "Store AWS access keys in K8s Secrets and mount them as environment variables",
       "Use the AWS SDK's default credential chain which automatically detects EKS and requests the correct role"
     ],
     correct: 1,
-    explanation: "IRSA (IAM Roles for Service Accounts) is the direct equivalent of ECS Task Roles. You create an IAM role with a trust policy for the EKS OIDC provider, annotate a K8s ServiceAccount with that role's ARN (eks.amazonaws.com/role-arn), and set that ServiceAccount on your pods. The EKS pod identity webhook injects STS credentials scoped to that specific role. This gives you pod-level IAM isolation — exactly like Task Roles in ECS. The node role approach (option A) is a security antipattern because every pod on the node gets the same broad permissions. EKS Pod Identity is the newer alternative to IRSA with a simpler setup, worth looking into as well."
+    explanation: "ECS Task Roles map to workload-scoped IAM through EKS Pod Identity or IRSA, both attached via a Kubernetes ServiceAccount assigned to your pods. With IRSA, you create an IAM role trusted by the EKS OIDC provider and annotate the ServiceAccount with that role ARN. EKS Pod Identity is the newer EKS-managed alternative with simpler setup. The node role approach (option A) is a security antipattern because every pod on the node gets the same broad permissions."
   },
   {
     category: "Advanced", catColor: "var(--accent2)",
@@ -2059,6 +2380,10 @@ function shuffle(arr) {
 }
 
 function initQuiz() {
+  const countLabel = document.getElementById('quiz-count-label');
+  if (countLabel) countLabel.textContent = `${quizData.length} questions`;
+  const progressBar = document.querySelector('.quiz-progress-bar');
+  if (progressBar) progressBar.setAttribute('aria-valuemax', String(quizData.length));
   if (quizInitialized) return;
   resetQuiz();
 }
@@ -2068,6 +2393,7 @@ function resetQuiz() {
   answered = {};
   score = 0;
   shuffled = shuffle(quizData);
+  document.getElementById('quiz-final-summary')?.remove();
   renderQuiz();
   updateProgress();
   document.getElementById('quiz-bottom-actions').style.display = 'none';
@@ -2091,7 +2417,7 @@ function renderQuiz() {
         <div class="quiz-q-text">${q.question}</div>
         <div class="quiz-options" id="quiz-opts-${qi}">
           ${shuffledOpts.map((origIdx, dispIdx) => `
-            <button class="quiz-option" id="opt-${qi}-${origIdx}" onclick="selectAnswer(${qi}, ${origIdx})">
+            <button class="quiz-option" id="opt-${qi}-${origIdx}" type="button" data-quiz-option data-question="${qi}" data-option="${origIdx}">
               <span class="opt-letter">${letters[dispIdx]}</span>${q.options[origIdx]}
             </button>
           `).join('')}
@@ -2134,7 +2460,7 @@ function selectAnswer(qi, selectedOrigIdx) {
   // Scroll card into nice view
   const card = document.getElementById(`quiz-q-${qi}`);
   setTimeout(() => {
-    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
   }, 100);
 }
 
@@ -2145,6 +2471,8 @@ function updateProgress() {
 
   document.getElementById('quiz-progress-fill').style.width = pct + '%';
   document.getElementById('quiz-progress-label').textContent = `${answeredCount} / ${total} answered`;
+  const progressBar = document.querySelector('.quiz-progress-bar');
+  if (progressBar) progressBar.setAttribute('aria-valuenow', String(answeredCount));
 
   const scoreColor = score > 0 ? (score / Math.max(answeredCount, 1) >= 0.7 ? 'var(--accent3)' : 'var(--accent4)') : 'var(--text-muted)';
   document.getElementById('quiz-score-label').innerHTML = `Score: <span style="color:${scoreColor}">${score}/${answeredCount}</span>`;
@@ -2182,6 +2510,8 @@ function updateProgress() {
     }
   }
 }
+
+initApp();
 </script>
 </body>
 </html>
