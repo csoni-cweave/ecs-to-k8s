@@ -13,15 +13,21 @@
     --surface2: #eef2f7;
     --border: #cbd5e1;
     --text: #0f172a;
-    --text-muted: #475569;
-    --accent: #0284c7;
-    --accent2: #4f46e5;
-    --accent3: #059669;
-    --accent4: #ea580c;
-    --accent5: #db2777;
-    --danger: #dc2626;
+    --text-muted: #334155;
+    --accent: #075985;
+    --accent-soft: #e0f2fe;
+    --accent2: #3730a3;
+    --accent2-soft: #e0e7ff;
+    --accent3: #047857;
+    --accent3-soft: #d1fae5;
+    --accent4: #c2410c;
+    --accent4-soft: #ffedd5;
+    --accent5: #be185d;
+    --accent5-soft: #fce7f3;
+    --danger: #b91c1c;
+    --danger-soft: #fee2e2;
     --code-bg: #f1f5f9;
-    --tag-bg: rgba(2, 132, 199, 0.1);
+    --tag-bg: rgba(7, 89, 133, 0.1);
   }
 
   body.dark-mode {
@@ -33,11 +39,17 @@
     --text: #e2e8f0;
     --text-muted: #94a3b8;
     --accent: #38bdf8;
+    --accent-soft: rgba(56,189,248,0.12);
     --accent2: #818cf8;
+    --accent2-soft: rgba(129,140,248,0.12);
     --accent3: #34d399;
+    --accent3-soft: rgba(52,211,153,0.12);
     --accent4: #fb923c;
+    --accent4-soft: rgba(251,146,60,0.12);
     --accent5: #f472b6;
+    --accent5-soft: rgba(244,114,182,0.12);
     --danger: #ef4444;
+    --danger-soft: rgba(239,68,68,0.12);
     --code-bg: #0d1520;
     --tag-bg: rgba(56, 189, 248, 0.1);
   }
@@ -131,7 +143,7 @@
     white-space: nowrap; transition: all 0.2s;
   }
   .nav-btn:hover { background: var(--surface); color: var(--text); }
-  .nav-btn.active { background: rgba(56,189,248,0.12); color: var(--accent); }
+  .nav-btn.active { background: var(--accent-soft); color: var(--accent); }
 
   /* Main layout */
   .container {
@@ -175,7 +187,7 @@
     display: flex; align-items: center; gap: 10px;
   }
   .card h3 .icon { font-size: 1.3rem; }
-  .card p, .card li { color: var(--text-muted); font-size: 0.95rem; line-height: 1.8; }
+  .card p, .card li { color: var(--text); font-size: 0.95rem; line-height: 1.8; }
   .card p { margin-bottom: 12px; }
   .card p:last-child { margin-bottom: 0; }
 
@@ -194,14 +206,14 @@
     border-radius: 8px;
   }
   .map-left {
-    background: rgba(251, 146, 60, 0.08);
-    border: 1px solid rgba(251, 146, 60, 0.2);
+    background: var(--accent4-soft);
+    border: 1px solid var(--accent4);
     color: var(--accent4);
     text-align: right;
   }
   .map-right {
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.2);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
     color: var(--accent);
   }
   .map-arrow { text-align: center; color: var(--text-muted); font-size: 1.1rem; }
@@ -233,10 +245,10 @@
     border-radius: 4px;
     margin: 2px 4px 2px 0;
   }
-  .tag-core { background: rgba(56,189,248,0.12); color: var(--accent); }
-  .tag-tool { background: rgba(129,140,248,0.12); color: var(--accent2); }
-  .tag-adv { background: rgba(244,114,182,0.12); color: var(--accent5); }
-  .tag-aws { background: rgba(251,146,60,0.12); color: var(--accent4); }
+  .tag-core { background: var(--accent-soft); color: var(--accent); }
+  .tag-tool { background: var(--accent2-soft); color: var(--accent2); }
+  .tag-adv { background: var(--accent5-soft); color: var(--accent5); }
+  .tag-aws { background: var(--accent4-soft); color: var(--accent4); }
 
   /* Concept depth toggles */
   .depth-toggle {
@@ -257,7 +269,7 @@
     color: var(--accent3);
     transition: background 0.2s;
   }
-  .depth-header:hover { background: rgba(52,211,153,0.05); }
+  .depth-header:hover { background: var(--accent3-soft); }
   .depth-header .arrow { transition: transform 0.2s; }
   .depth-header.open .arrow { transform: rotate(90deg); }
   .depth-body {
@@ -328,7 +340,7 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.8rem;
     line-height: 1.6;
-    color: var(--text-muted);
+    color: var(--text);
     overflow-x: auto;
     white-space: pre;
   }
@@ -359,20 +371,20 @@
     font-size: 0.82rem;
     margin-bottom: 8px;
   }
-  .flow-box p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
-  .flow-blue { border-color: rgba(56,189,248,0.3); background: rgba(56,189,248,0.05); }
+  .flow-box p { font-size: 0.82rem; color: var(--text); margin: 0; }
+  .flow-blue { border-color: var(--accent); background: var(--accent-soft); }
   .flow-blue h4 { color: var(--accent); }
-  .flow-purple { border-color: rgba(129,140,248,0.3); background: rgba(129,140,248,0.05); }
+  .flow-purple { border-color: var(--accent2); background: var(--accent2-soft); }
   .flow-purple h4 { color: var(--accent2); }
-  .flow-green { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.05); }
+  .flow-green { border-color: var(--accent3); background: var(--accent3-soft); }
   .flow-green h4 { color: var(--accent3); }
-  .flow-orange { border-color: rgba(251,146,60,0.3); background: rgba(251,146,60,0.05); }
+  .flow-orange { border-color: var(--accent4); background: var(--accent4-soft); }
   .flow-orange h4 { color: var(--accent4); }
-  .flow-pink { border-color: rgba(244,114,182,0.3); background: rgba(244,114,182,0.05); }
+  .flow-pink { border-color: var(--accent5); background: var(--accent5-soft); }
   .flow-pink h4 { color: var(--accent5); }
 
   .callout {
-    background: rgba(56,189,248,0.06);
+    background: var(--accent-soft);
     border-left: 3px solid var(--accent);
     padding: 16px 20px;
     border-radius: 0 8px 8px 0;
@@ -380,7 +392,7 @@
     font-size: 0.92rem;
   }
   .callout-warn {
-    background: rgba(251,146,60,0.06);
+    background: var(--accent4-soft);
     border-left-color: var(--accent4);
   }
 
@@ -492,29 +504,29 @@
   .quiz-option:hover:not(.locked) {
     border-color: var(--accent);
     color: var(--text);
-    background: rgba(56,189,248,0.05);
+    background: var(--accent-soft);
   }
   .quiz-option.selected {
     border-color: var(--accent);
     color: var(--accent);
-    background: rgba(56,189,248,0.08);
+    background: var(--accent-soft);
   }
   .quiz-option.correct {
     border-color: var(--accent3);
     color: var(--accent3);
-    background: rgba(52,211,153,0.1);
+    background: var(--accent3-soft);
   }
   .quiz-option.incorrect {
     border-color: var(--danger);
     color: var(--danger);
-    background: rgba(239,68,68,0.08);
+    background: var(--danger-soft);
     text-decoration: line-through;
-    opacity: 0.7;
+    opacity: 0.85;
   }
   .quiz-option.reveal-correct {
     border-color: var(--accent3);
     color: var(--accent3);
-    background: rgba(52,211,153,0.1);
+    background: var(--accent3-soft);
   }
   .quiz-option.locked { cursor: default; }
   .quiz-option .opt-letter {
@@ -533,11 +545,11 @@
   }
   .quiz-explanation.show { display: block; }
   .quiz-explanation.is-correct {
-    background: rgba(52,211,153,0.06);
+    background: var(--accent3-soft);
     border-left: 3px solid var(--accent3);
   }
   .quiz-explanation.is-incorrect {
-    background: rgba(239,68,68,0.06);
+    background: var(--danger-soft);
     border-left: 3px solid var(--danger);
   }
   .quiz-actions {
@@ -559,12 +571,12 @@
   }
   .quiz-btn:hover { border-color: var(--accent); color: var(--accent); }
   .quiz-btn-primary {
-    background: rgba(56,189,248,0.12);
-    border-color: rgba(56,189,248,0.3);
+    background: var(--accent-soft);
+    border-color: var(--accent);
     color: var(--accent);
   }
   .quiz-btn-primary:hover {
-    background: rgba(56,189,248,0.2);
+    background: var(--surface2);
   }
 </style>
 </head>
@@ -593,11 +605,12 @@
     <button class="nav-btn" onclick="showSection('dev-tools')">Dev Tools</button>
     <button class="nav-btn" onclick="showSection('advanced')">Advanced</button>
     <button class="nav-btn" onclick="showSection('ecosystem')">Ecosystem Map</button>
+    <button class="nav-btn" onclick="showSection('real-world-systems')">Real Systems</button>
     <button class="nav-btn" onclick="showSection('quiz')" style="color:var(--accent3);">🧪 Quiz</button>
   </div>
 </nav>
 
-<div class="container">
+<main class="container" id="main-content">
 
 <!-- ============================================================ -->
 <!-- MENTAL MODEL -->
@@ -1497,10 +1510,164 @@ KO_DOCKER_REPO=kind.local ko apply -f config/</pre>
   </div>
 </div>
 
-</div><!-- /container -->
+<!-- ============================================================ -->
+<!-- REAL WORLD SYSTEMS -->
+<!-- ============================================================ -->
+<div id="real-world-systems" class="section">
+  <h2 class="section-title">Large-Scale Systems: Spark and Airflow</h2>
+  <p class="section-subtitle">A real-world data platform mapped across ECS and Kubernetes — the matrix that makes the two worlds click.</p>
+
+  <div class="card">
+    <h3><span class="icon">🧩</span> The Unlock: Platform vs Workload</h3>
+    <p>Spark and Airflow are not just "containers you run." They are distributed systems: schedulers, workers, drivers, executors, metadata stores, logs, secrets, retry loops, autoscaling signals, and failure domains.</p>
+    <p><strong>ECS asks:</strong> what task or service should I run? <strong>Kubernetes asks:</strong> what state should exist, and which controller reconciles it? Once you see a platform as controllers plus runtime units, the mapping becomes obvious.</p>
+    <div class="callout">
+      <strong>The mental flip:</strong> ECS keeps many platform concerns in AWS services, Terraform, IAM, CloudWatch, and custom glue. Kubernetes turns more of those concerns into API objects that controllers can watch, reconcile, and extend.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🏪</span> Scenario: Marketplace Data Platform</h3>
+    <p>Imagine a marketplace company processing clickstream events, orders, fraud signals, search relevance data, and ML features.</p>
+    <div class="flow-container">
+      <div class="flow-box flow-blue"><h4>Sources</h4><p>S3, Kafka/MSK, RDS, partner feeds, warehouse exports.</p></div>
+      <div class="flow-box flow-purple"><h4>Orchestration</h4><p>Airflow schedules hourly, daily, and event-triggered DAGs.</p></div>
+      <div class="flow-box flow-green"><h4>Compute</h4><p>Spark jobs fan out from tiny transforms to thousands of executors.</p></div>
+      <div class="flow-box flow-orange"><h4>Outputs</h4><p>S3 lake, Redshift/Snowflake, feature store, dashboards.</p></div>
+      <div class="flow-box flow-pink"><h4>Operations</h4><p>Logs, metrics, alerts, retries, data quality, lineage, costs.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🗺️</span> Platform-Neutral Architecture</h3>
+    <div class="diagram">┌─────────────────────────────────────────────────────────────┐
+│ <span class="highlight">Data Sources</span>: S3 · Kafka/MSK · RDS · Warehouse · APIs         │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│ <span class="highlight2">Airflow Control Plane</span>: webserver · scheduler · metadata DB  │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ submits jobs/tasks
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│ <span class="highlight3">Spark Compute Plane</span>: driver · executors · shuffle · retries │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ writes results
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│ <span class="highlight4">Outputs</span>: data lake · warehouse · feature store · dashboards │
+└──────────────────────────────┬──────────────────────────────┘
+                               │ emits signals
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│ Observability: logs · metrics · traces · alerts · lineage    │
+└─────────────────────────────────────────────────────────────┘</div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3><span class="icon">🟧</span> Build It on ECS</h3>
+      <p><strong>Airflow webserver:</strong> ECS Service behind an ALB.</p>
+      <p><strong>Airflow scheduler:</strong> ECS Service with desired count 1, or HA schedulers if configured.</p>
+      <p><strong>Workers:</strong> ECS Service for CeleryExecutor, or ECS RunTask for task-per-container patterns.</p>
+      <p><strong>Spark driver:</strong> ECS task launched per application by Airflow, CI, or a wrapper service.</p>
+      <p><strong>Spark executors:</strong> ECS tasks coordinated by custom orchestration or a Spark-on-ECS integration layer.</p>
+      <p><strong>State:</strong> RDS for Airflow metadata, Redis/Amazon MQ for Celery, S3 for DAGs, logs, and datasets.</p>
+      <p><strong>Platform glue:</strong> IAM task roles, security groups, Cloud Map, CloudWatch alarms, scheduled scaling, Terraform/CDK.</p>
+    </div>
+
+    <div class="card">
+      <h3><span class="icon">☸️</span> Build It on Kubernetes</h3>
+      <p><strong>Namespace:</strong> <code>data-platform</code> with RBAC, quotas, NetworkPolicies, and service accounts.</p>
+      <p><strong>Airflow webserver:</strong> Deployment + Service + Ingress.</p>
+      <p><strong>Airflow scheduler:</strong> Deployment, usually installed through Helm.</p>
+      <p><strong>Workers:</strong> Deployment for CeleryExecutor, or ephemeral pods for KubernetesExecutor.</p>
+      <p><strong>Spark jobs:</strong> <code>SparkApplication</code> CRDs reconciled by the Spark Operator.</p>
+      <p><strong>State:</strong> managed RDS/S3 where possible; PVCs or StatefulSets only when the platform truly owns state.</p>
+      <p><strong>Platform glue:</strong> External Secrets, ServiceAccount + IRSA, HPA/KEDA, Karpenter, Prometheus/Grafana, log collectors.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🧠</span> The Brain-Unlock Matrix</h3>
+    <p>Read each row as: "what problem am I solving, how does each platform express it, and what is the underlying mental model?"</p>
+    <div class="map-grid">
+      <div class="map-left">Airflow UI: ECS Service + ALB</div><div class="map-arrow">→</div><div class="map-right">Deployment + Service + Ingress: stable endpoint plus rolling lifecycle</div>
+      <div class="map-left">Airflow scheduler: ECS Service</div><div class="map-arrow">→</div><div class="map-right">Deployment: singleton/HA control-plane component</div>
+      <div class="map-left">One-off task: ECS RunTask</div><div class="map-arrow">→</div><div class="map-right">Job: run-to-completion workload object</div>
+      <div class="map-left">Scheduled task: EventBridge + RunTask</div><div class="map-arrow">→</div><div class="map-right">CronJob: time creates Job objects</div>
+      <div class="map-left">Spark driver: ECS task</div><div class="map-arrow">→</div><div class="map-right">Driver pod from SparkApplication: one job owns a temporary control plane</div>
+      <div class="map-left">Spark executors: ECS tasks + glue</div><div class="map-arrow">→</div><div class="map-right">Executor pods: elastic data plane controlled by a job spec</div>
+      <div class="map-left">Worker pool: ECS Service Auto Scaling</div><div class="map-arrow">→</div><div class="map-right">Deployment + HPA/KEDA: scale consumers from metrics or queue depth</div>
+      <div class="map-left">State: RDS, EFS, S3</div><div class="map-arrow">→</div><div class="map-right">RDS/S3 + PVC/StatefulSet when needed: durable state stays separate from compute</div>
+      <div class="map-left">Secrets: Secrets Manager into task env</div><div class="map-arrow">→</div><div class="map-right">External Secrets → Kubernetes Secret: secret projection is part of pod spec</div>
+      <div class="map-left">IAM: task role</div><div class="map-arrow">→</div><div class="map-right">ServiceAccount + IRSA: workload identity attached to runtime unit</div>
+      <div class="map-left">Networking: ALB, SGs, Cloud Map</div><div class="map-arrow">→</div><div class="map-right">Service, Ingress/Gateway, NetworkPolicy: reachability becomes API resources</div>
+      <div class="map-left">Compute scaling: ASG/Fargate capacity providers</div><div class="map-arrow">→</div><div class="map-right">Karpenter/Cluster Autoscaler: pending pods can shape the cluster</div>
+      <div class="map-left">Observability: CloudWatch-first</div><div class="map-arrow">→</div><div class="map-right">Prometheus/log stack-first: platform emits queryable signals</div>
+      <div class="map-left">Release: ECS deployment config</div><div class="map-arrow">→</div><div class="map-right">Deployment strategy/Argo Rollouts: rollout is controller behavior</div>
+      <div class="map-left">Multi-tenancy: accounts, clusters, services</div><div class="map-arrow">→</div><div class="map-right">Namespaces, RBAC, quotas, policies: boundaries become cluster resources</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3><span class="icon">🌀</span> Airflow: ECS Pattern</h3>
+      <p>Run the webserver and scheduler as ECS Services. Run workers as an ECS Service if using CeleryExecutor, or launch per-task containers with ECS RunTask. Store metadata in RDS, logs in CloudWatch/S3, DAGs in S3 or baked images, and secrets in Secrets Manager.</p>
+      <p><strong>What you own:</strong> worker scaling metrics, executor lifecycle, task cleanup, network permissions, IAM policy shape, retry semantics outside Airflow, and deployment wiring.</p>
+    </div>
+    <div class="card">
+      <h3><span class="icon">🌀</span> Airflow: K8s Pattern</h3>
+      <p>Install with Helm. Run webserver and scheduler as Deployments. Use Celery workers as Deployments or KubernetesExecutor to create a pod per task. Sync DAGs with git-sync or image builds, use External Secrets, and collect logs with a cluster log agent.</p>
+      <p><strong>Unlock:</strong> each DAG task can become a pod with its own image, CPU, memory, secrets, service account, node placement, and failure lifecycle.</p>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h3><span class="icon">⚡</span> Spark: ECS Pattern</h3>
+      <p>Package the Spark driver as a container and launch it as an ECS task from Airflow or CI. The driver coordinates executor tasks through custom orchestration, a wrapper, or a platform service. Data and checkpoints live in S3; logs stream to CloudWatch/S3; AWS permissions come from task roles.</p>
+      <p><strong>Tradeoff:</strong> ECS can run the containers, but the Spark-specific lifecycle usually lives in glue code: executor creation, cleanup, retries, UI exposure, shuffle behavior, and capacity shaping.</p>
+    </div>
+    <div class="card">
+      <h3><span class="icon">⚡</span> Spark: K8s Pattern</h3>
+      <p>Install the Spark Operator and submit a <code>SparkApplication</code>. The operator creates the driver pod, the driver creates executor pods, each pod declares CPU/memory, and Karpenter can add nodes when executors are unschedulable. UI access, logs, and identity are all modeled through K8s resources.</p>
+      <p><strong>Unlock:</strong> Operators teach Kubernetes a new domain object. Spark becomes declarative: desired application spec in, reconciled distributed job lifecycle out.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🟧</span> ECS Execution Flow</h3>
+    <div class="flow-container">
+      <div class="flow-box flow-blue"><h4>1. Airflow DAG</h4><p>Scheduler decides a Spark or ETL job should run.</p></div>
+      <div class="flow-box flow-purple"><h4>2. ECS RunTask</h4><p>Starts a driver task, worker task, or job wrapper.</p></div>
+      <div class="flow-box flow-green"><h4>3. ECS Tasks</h4><p>Driver and workers perform compute using task roles and VPC networking.</p></div>
+      <div class="flow-box flow-orange"><h4>4. AWS Services</h4><p>S3, RDS, Secrets Manager, CloudWatch, ALB, Cloud Map.</p></div>
+      <div class="flow-box flow-pink"><h4>5. Custom Glue</h4><p>Scaling signals, executor lifecycle, cleanup, retries, and cost controls.</p></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">☸️</span> Kubernetes Execution Flow</h3>
+    <div class="flow-container">
+      <div class="flow-box flow-blue"><h4>1. Airflow DAG</h4><p>Scheduler submits a Job, pod, or SparkApplication.</p></div>
+      <div class="flow-box flow-purple"><h4>2. K8s API</h4><p>The desired object is persisted in etcd and observed by controllers.</p></div>
+      <div class="flow-box flow-green"><h4>3. Controller</h4><p>Deployment, Job, CronJob, or Spark Operator reconciles actual state.</p></div>
+      <div class="flow-box flow-orange"><h4>4. Pods + Services</h4><p>Drivers, executors, webserver, workers, services, and ingress endpoints.</p></div>
+      <div class="flow-box flow-pink"><h4>5. Autoscalers</h4><p>HPA, KEDA, and Karpenter resize app capacity and cluster capacity.</p></div>
+    </div>
+  </div>
+
+  <div class="callout callout-warn">
+    <strong>Decision rule:</strong> use ECS when the platform is mostly AWS-native services, stable long-running containers, and simple scheduled tasks. Use Kubernetes when the system has heterogeneous jobs, dynamic resources, per-job isolation, operators, multi-team boundaries, and a need to make platform behavior declarative.
+  </div>
+</div>
+
+</main><!-- /container -->
 
 <!-- QUIZ SECTION — rendered by JS outside .container for full control -->
-<div class="container" id="quiz-container" style="display:none;">
+<main class="container" id="quiz-container" style="display:none;">
 <div id="quiz" class="section active">
   <h2 class="section-title">Knowledge Check</h2>
   <p class="section-subtitle">25 questions spanning core concepts, real-world scenarios, and advanced strategies. Shuffled fresh every time you load.</p>
@@ -1518,7 +1685,7 @@ KO_DOCKER_REPO=kind.local ko apply -f config/</pre>
     <button class="quiz-btn" onclick="showSection('mental-model')">← Back to Guide</button>
   </div>
 </div>
-</div>
+</main>
 
 <script>
 /* ── Theme toggle ────────────────────────────────────── */
@@ -1545,7 +1712,7 @@ function showSection(id) {
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
   // Handle quiz specially since it's in its own container
-  const mainContainer = document.querySelector('.container:not(#quiz-container)');
+  const mainContainer = document.getElementById('main-content');
   const quizContainer = document.getElementById('quiz-container');
 
   if (id === 'quiz') {
