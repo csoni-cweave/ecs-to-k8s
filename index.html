@@ -775,20 +775,21 @@
     <div class="nav-group">
       <h2 class="nav-group-title">Day-to-Day Operations</h2>
       <button class="nav-link" type="button" data-section="kubectl" aria-controls="kubectl"><span class="nav-index">08</span><span class="nav-text">kubectl</span></button>
-      <button class="nav-link" type="button" data-section="helm" aria-controls="helm"><span class="nav-index">09</span><span class="nav-text">Helm</span></button>
-      <button class="nav-link" type="button" data-section="terraform" aria-controls="terraform"><span class="nav-index">10</span><span class="nav-text">Terraform</span></button>
+      <button class="nav-link" type="button" data-section="local-k8s" aria-controls="local-k8s"><span class="nav-index">09</span><span class="nav-text">Local K8s Lab</span></button>
+      <button class="nav-link" type="button" data-section="helm" aria-controls="helm"><span class="nav-index">10</span><span class="nav-text">Helm</span></button>
+      <button class="nav-link" type="button" data-section="terraform" aria-controls="terraform"><span class="nav-index">11</span><span class="nav-text">Terraform</span></button>
     </div>
     <div class="nav-group">
       <h2 class="nav-group-title">Platform Engineering</h2>
-      <button class="nav-link" type="button" data-section="operators" aria-controls="operators"><span class="nav-index">11</span><span class="nav-text">Operators &amp; CRDs</span></button>
-      <button class="nav-link" type="button" data-section="dev-tools" aria-controls="dev-tools"><span class="nav-index">12</span><span class="nav-text">Dev Tools</span></button>
-      <button class="nav-link" type="button" data-section="advanced" aria-controls="advanced"><span class="nav-index">13</span><span class="nav-text">Advanced</span></button>
+      <button class="nav-link" type="button" data-section="operators" aria-controls="operators"><span class="nav-index">12</span><span class="nav-text">Operators &amp; CRDs</span></button>
+      <button class="nav-link" type="button" data-section="dev-tools" aria-controls="dev-tools"><span class="nav-index">13</span><span class="nav-text">Dev Tools</span></button>
+      <button class="nav-link" type="button" data-section="advanced" aria-controls="advanced"><span class="nav-index">14</span><span class="nav-text">Advanced</span></button>
     </div>
     <div class="nav-group">
       <h2 class="nav-group-title">Synthesis</h2>
-      <button class="nav-link" type="button" data-section="ecosystem" aria-controls="ecosystem"><span class="nav-index">14</span><span class="nav-text">Ecosystem Map</span></button>
-      <button class="nav-link" type="button" data-section="real-world-systems" aria-controls="real-world-systems"><span class="nav-index">15</span><span class="nav-text">Real Systems</span></button>
-      <button class="nav-link" type="button" data-section="quiz" aria-controls="quiz"><span class="nav-index">16</span><span class="nav-text">Knowledge Check</span></button>
+      <button class="nav-link" type="button" data-section="ecosystem" aria-controls="ecosystem"><span class="nav-index">15</span><span class="nav-text">Ecosystem Map</span></button>
+      <button class="nav-link" type="button" data-section="real-world-systems" aria-controls="real-world-systems"><span class="nav-index">16</span><span class="nav-text">Real Systems</span></button>
+      <button class="nav-link" type="button" data-section="quiz" aria-controls="quiz"><span class="nav-index">17</span><span class="nav-text">Knowledge Check</span></button>
     </div>
   </nav>
 </aside>
@@ -804,7 +805,7 @@
 
   <div class="card">
     <h3><span class="icon">🧭</span> Recommended Learning Path</h3>
-    <p><strong>Start with the mental model, then map ECS concepts to Kubernetes concepts.</strong> After that, learn how apps run, how traffic reaches them, how config/state works, how operators package and automate systems, and finally how those pieces combine in real systems like Airflow and Spark.</p>
+    <p><strong>Start with the mental model, then map ECS concepts to Kubernetes concepts.</strong> After that, learn how apps run, how traffic reaches them, how config/state works, and use the Local K8s Lab after kubectl to build muscle memory before Helm, Terraform, and platform tooling.</p>
     <p>Use the sidebar as the curriculum and the previous/next controls as the guided path. The ecosystem map is reference material — not a memorization list.</p>
   </div>
 
@@ -1322,6 +1323,254 @@ kubectl diff -f manifest.yaml            <span class="comment"># show what would
 </section>
 
 <!-- ============================================================ -->
+<!-- LOCAL K8S LAB -->
+<!-- ============================================================ -->
+<section id="local-k8s" class="section">
+  <h2 class="section-title">Local K8s Lab — OrbStack, kind, and Tilt</h2>
+  <p class="section-subtitle">Build the muscle memory: create a local cluster, deploy a small service, inspect it with kubectl, then speed up the inner loop with Tilt.</p>
+
+  <div class="card">
+    <h3><span class="icon">🧪</span> What You Will Build</h3>
+    <p>This lab gives you a real Kubernetes API on your laptop. OrbStack provides the local Docker runtime, kind creates Kubernetes nodes as containers, kubectl talks to the cluster, and Tilt gives you the fast edit-build-deploy loop.</p>
+    <div class="flow-container">
+      <div class="flow-box flow-orange">
+        <h4>OrbStack</h4>
+        <p>Fast local containers on macOS. Think: the engine kind uses underneath.</p>
+      </div>
+      <div class="flow-box flow-blue">
+        <h4>kind</h4>
+        <p>Kubernetes-in-Docker. Creates an isolated cluster you can delete safely.</p>
+      </div>
+      <div class="flow-box flow-green">
+        <h4>kubectl</h4>
+        <p>Your hands on the API: inspect pods, logs, events, rollout, and services.</p>
+      </div>
+      <div class="flow-box flow-purple">
+        <h4>Tilt</h4>
+        <p>Watches code, rebuilds the image, redeploys, streams logs, and port-forwards.</p>
+      </div>
+    </div>
+    <div class="map-grid">
+      <div class="map-left">ECS Task Definition</div><div class="map-arrow">→</div><div class="map-right">Pod template inside a Deployment</div>
+      <div class="map-left">ECS Service</div><div class="map-arrow">→</div><div class="map-right">Deployment + Service</div>
+      <div class="map-left">Desired count</div><div class="map-arrow">→</div><div class="map-right">Deployment replicas</div>
+      <div class="map-left">CloudWatch Logs</div><div class="map-arrow">→</div><div class="map-right">kubectl logs / Tilt logs</div>
+      <div class="map-left">ALB Target Group</div><div class="map-arrow">→</div><div class="map-right">Service + local port-forward</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🚀</span> Prerequisites and Cluster Setup</h3>
+    <p>Install OrbStack, kind, kubectl, and Tilt first. Then create a disposable local cluster for this lab.</p>
+<pre><span class="comment"># Verify local tooling</span>
+orb version
+docker version
+kind version
+kubectl version --client
+tilt version
+
+<span class="comment"># Create an isolated local Kubernetes cluster using OrbStack's Docker runtime</span>
+kind create cluster --name ecs-k8s-lab
+
+<span class="comment"># Confirm kubectl is talking to the lab cluster</span>
+kubectl config current-context
+kubectl cluster-info
+kubectl get nodes</pre>
+    <div class="callout callout-warn">
+      <strong>OrbStack note:</strong> OrbStack can also run its own Kubernetes cluster. For this lab, keep the workflow isolated by using the kind context.
+<pre>kubectl config use-context kind-ecs-k8s-lab</pre>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📁</span> Create the Tiny Service</h3>
+    <p>Create a local directory named <code>local-k8s-demo</code>. The service is intentionally small so Kubernetes stays the focus.</p>
+<pre>local-k8s-demo/
+├── Dockerfile
+├── package.json
+├── server.js
+├── k8s.yaml
+└── Tiltfile</pre>
+    <p><strong>package.json</strong></p>
+<pre>{
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.3"
+  }
+}</pre>
+    <p><strong>server.js</strong></p>
+<pre>const express = require('express');
+
+const app = express();
+const port = process.env.PORT || 8080;
+const message = process.env.MESSAGE || 'Hello from local Kubernetes';
+
+app.get('/', (_req, res) =&gt; {
+  res.json({ service: 'local-k8s-demo', message });
+});
+
+app.get('/healthz', (_req, res) =&gt; {
+  res.json({ ok: true });
+});
+
+app.get('/env', (_req, res) =&gt; {
+  res.json({ message, pod: process.env.HOSTNAME });
+});
+
+app.listen(port, () =&gt; {
+  console.log(`local-k8s-demo listening on ${port}`);
+});</pre>
+    <p><strong>Dockerfile</strong></p>
+<pre>FROM node:20-alpine
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm install --omit=dev
+COPY server.js .
+EXPOSE 8080
+CMD ["npm", "start"]</pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">📦</span> Deploy It Manually First</h3>
+    <p>This is the Kubernetes version of defining a task, running a service, and wiring a stable endpoint to disposable containers.</p>
+    <p><strong>k8s.yaml</strong></p>
+<pre>apiVersion: v1
+kind: Namespace
+metadata:
+  name: local-k8s
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-k8s-demo-config
+  namespace: local-k8s
+data:
+  MESSAGE: "Hello from a ConfigMap"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-k8s-demo
+  namespace: local-k8s
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: local-k8s-demo
+  template:
+    metadata:
+      labels:
+        app: local-k8s-demo
+    spec:
+      containers:
+      - name: app
+        image: local-k8s-demo:dev
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: local-k8s-demo-config
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 2
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 250m
+            memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: local-k8s-demo
+  namespace: local-k8s
+spec:
+  type: ClusterIP
+  selector:
+    app: local-k8s-demo
+  ports:
+  - port: 80
+    targetPort: 8080</pre>
+<pre><span class="comment"># Build locally and load the image into the kind cluster</span>
+docker build -t local-k8s-demo:dev .
+kind load docker-image local-k8s-demo:dev --name ecs-k8s-lab
+
+<span class="comment"># Apply desired state</span>
+kubectl apply -f k8s.yaml
+
+<span class="comment"># Inspect what Kubernetes created</span>
+kubectl get deploy,po,svc -n local-k8s
+kubectl describe deploy local-k8s-demo -n local-k8s
+kubectl logs -l app=local-k8s-demo -n local-k8s
+
+<span class="comment"># Reach the ClusterIP Service from your laptop</span>
+kubectl port-forward -n local-k8s svc/local-k8s-demo 8080:80
+curl http://localhost:8080
+curl http://localhost:8080/healthz
+curl http://localhost:8080/env</pre>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔍</span> Break It, Inspect It, Fix It</h3>
+    <p>The unlock is seeing the control loop in action. Delete pods, scale the Deployment, change config, and watch Kubernetes reconcile back to desired state.</p>
+<pre><span class="comment"># Watch Kubernetes replace deleted pods</span>
+kubectl get pods -n local-k8s -w
+kubectl delete pod -n local-k8s -l app=local-k8s-demo
+
+<span class="comment"># Scale like ECS desired count</span>
+kubectl scale deploy/local-k8s-demo -n local-k8s --replicas=4
+kubectl get pods -n local-k8s
+
+<span class="comment"># Change config and restart pods to pick it up</span>
+kubectl edit configmap local-k8s-demo-config -n local-k8s
+kubectl rollout restart deploy/local-k8s-demo -n local-k8s
+kubectl rollout status deploy/local-k8s-demo -n local-k8s
+
+<span class="comment"># Inspect the objects Kubernetes is reconciling</span>
+kubectl describe pod -n local-k8s -l app=local-k8s-demo
+kubectl get deploy local-k8s-demo -n local-k8s -o yaml</pre>
+    <div class="callout">
+      <strong>What should click:</strong> Pods are disposable, Services are stable, Deployments own rollout and replica count, and config changes do not automatically restart running pods unless you trigger a rollout or use tooling that does it for you.
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🔄</span> Add Tilt for the Inner Loop</h3>
+    <p>Manual Docker build, image load, and kubectl apply are useful once. Tilt turns that into a daily development loop.</p>
+    <p><strong>Tiltfile</strong></p>
+<pre>docker_build('local-k8s-demo', '.')
+k8s_yaml('k8s.yaml')
+k8s_resource('local-k8s-demo', port_forwards='8080:80')</pre>
+<pre>tilt up</pre>
+    <p>Now edit <code>server.js</code>, save, and watch Tilt rebuild the image, update Kubernetes, stream logs, and keep the port-forward alive. Refresh <code>http://localhost:8080</code> to see the change.</p>
+    <p><strong>ECS translation:</strong> instead of build → push → deploy or a Compose-like simulation, Tilt gives you a real Kubernetes-native loop against the same API shape you will use in dev, staging, and production.</p>
+  </div>
+
+  <div class="card">
+    <h3><span class="icon">🧹</span> Cleanup</h3>
+<pre><span class="comment"># Reset just the app, but keep the cluster</span>
+kubectl delete namespace local-k8s
+
+<span class="comment"># Or delete the whole disposable lab cluster</span>
+kind delete cluster --name ecs-k8s-lab</pre>
+  </div>
+</section>
+
+<!-- ============================================================ -->
 <!-- HELM -->
 <!-- ============================================================ -->
 <section id="helm" class="section">
@@ -1509,6 +1758,7 @@ helm search repo postgresql</pre>
 
   <div class="card">
     <h3><span class="icon">🏠</span> Local Cluster Tools</h3>
+    <p>For a guided OrbStack + kind + Tilt walkthrough, use the Local K8s Lab section earlier in the path. This section is the broader tool survey.</p>
     <div class="flow-container">
       <div class="flow-box flow-blue">
         <h4>kind</h4>
