@@ -462,6 +462,72 @@
   .flow-pink { border-color: var(--accent5); background: var(--accent5-soft); }
   .flow-pink h4 { color: var(--accent5); }
 
+  .architecture-diagram {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 22px;
+    margin: 20px 0;
+  }
+  .arch-layer {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    padding: 18px;
+  }
+  .arch-layer h4 {
+    color: var(--accent);
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+  }
+  .arch-component {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface2);
+    padding: 14px;
+    min-width: 0;
+  }
+  .arch-component strong {
+    color: var(--accent2);
+    display: block;
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.82rem;
+    margin-bottom: 6px;
+  }
+  .arch-component span {
+    color: var(--text-muted);
+    display: block;
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .arch-arrow {
+    color: var(--text-muted);
+    font-size: 1.6rem;
+    line-height: 1;
+    margin: 14px 0;
+    text-align: center;
+  }
+  .arch-node strong { color: var(--accent3); }
+  .arch-node ul {
+    color: var(--text);
+    font-size: 0.86rem;
+    line-height: 1.7;
+    list-style: none;
+    margin-top: 8px;
+  }
+  .arch-node li::before {
+    color: var(--accent4);
+    content: '• ';
+  }
+
   .callout {
     background: var(--accent-soft);
     border-left: 3px solid var(--accent);
@@ -745,8 +811,8 @@
 <button class="theme-toggle" id="theme-toggle" type="button">Dark mode</button>
 
 <header class="hero">
-  <h1>The Kubernetes Landscape</h1>
-  <p>A complete guide for engineers transitioning from AWS ECS to the Kubernetes ecosystem — from core primitives to advanced tooling.</p>
+  <h1>The ECS Engineer’s Guide to Kubernetes</h1>
+  <p>Build the Kubernetes mental model through ECS mappings, hands-on local labs, and real-world systems like Spark and Airflow.</p>
 </header>
 
 <button class="mobile-menu-toggle" id="sidebar-toggle" type="button" aria-expanded="false" aria-controls="lesson-sidebar" aria-label="Open learning path menu">
@@ -817,31 +883,64 @@
 
   <div class="card">
     <h3><span class="icon">🏗️</span> The Architecture at 30,000 Feet</h3>
-    <div class="diagram">┌─────────────────────────────────────────────────────────────┐
-│                      <span class="highlight">CONTROL PLANE</span>                         │
-│  ┌───────────┐  ┌──────────┐  ┌──────────┐  ┌───────────┐  │
-│  │ <span class="highlight2">API Server</span> │  │<span class="highlight2">Scheduler</span> │  │ <span class="highlight2">etcd</span>     │  │<span class="highlight2">Controller</span>│  │
-│  │           │  │          │  │ (state   │  │ <span class="highlight2">Manager</span>  │  │
-│  │ All comms │  │ Picks    │  │  store)  │  │ Runs      │  │
-│  │ go here   │  │ nodes    │  │          │  │ loops     │  │
-│  └───────────┘  └──────────┘  └──────────┘  └───────────┘  │
-└─────────────────────────────────────────────────────────────┘
-        │                  │                    │
-        ▼                  ▼                    ▼
-┌───────────────┐  ┌───────────────┐  ┌───────────────┐
-│   <span class="highlight3">Worker Node</span>   │  │   <span class="highlight3">Worker Node</span>   │  │   <span class="highlight3">Worker Node</span>   │
-│ ┌───────────┐ │  │ ┌───────────┐ │  │ ┌───────────┐ │
-│ │  <span class="highlight4">kubelet</span>   │ │  │ │  <span class="highlight4">kubelet</span>   │ │  │ │  <span class="highlight4">kubelet</span>   │ │
-│ │ (agent)   │ │  │ │ (agent)   │ │  │ │ (agent)   │ │
-│ ├───────────┤ │  │ ├───────────┤ │  │ ├───────────┤ │
-│ │ <span class="highlight4">kube-proxy</span>│ │  │ │ <span class="highlight4">kube-proxy</span>│ │  │ │ <span class="highlight4">kube-proxy</span>│ │
-│ │ (network) │ │  │ │ (network) │ │  │ │ (network) │ │
-│ ├───────────┤ │  │ ├───────────┤ │  │ ├───────────┤ │
-│ │<span class="highlight4">Container</span>  │ │  │ │<span class="highlight4">Container</span>  │ │  │ │<span class="highlight4">Container</span>  │ │
-│ │ <span class="highlight4">Runtime</span>   │ │  │ │ <span class="highlight4">Runtime</span>   │ │  │ │ <span class="highlight4">Runtime</span>   │ │
-│ └───────────┘ │  │ └───────────┘ │  │ └───────────┘ │
-│  [Pod][Pod]   │  │  [Pod][Pod]   │  │    [Pod]      │
-└───────────────┘  └───────────────┘  └───────────────┘</div>
+    <div class="architecture-diagram">
+      <div class="arch-layer">
+        <h4>CONTROL PLANE</h4>
+        <div class="arch-grid">
+          <div class="arch-component">
+            <strong>API Server</strong>
+            <span>All clients and controllers talk through this front door.</span>
+          </div>
+          <div class="arch-component">
+            <strong>Scheduler</strong>
+            <span>Chooses which node should run each pending pod.</span>
+          </div>
+          <div class="arch-component">
+            <strong>etcd</strong>
+            <span>Stores cluster state and desired configuration.</span>
+          </div>
+          <div class="arch-component">
+            <strong>Controller Manager</strong>
+            <span>Runs reconciliation loops that keep actual state matching desired state.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="arch-arrow" aria-hidden="true">↓</div>
+
+      <div class="arch-layer">
+        <h4>WORKER NODES</h4>
+        <div class="arch-grid">
+          <div class="arch-component arch-node">
+            <strong>Node A</strong>
+            <ul>
+              <li>kubelet</li>
+              <li>kube-proxy</li>
+              <li>container runtime</li>
+              <li>Pods</li>
+            </ul>
+          </div>
+          <div class="arch-component arch-node">
+            <strong>Node B</strong>
+            <ul>
+              <li>kubelet</li>
+              <li>kube-proxy</li>
+              <li>container runtime</li>
+              <li>Pods</li>
+            </ul>
+          </div>
+          <div class="arch-component arch-node">
+            <strong>Node C</strong>
+            <ul>
+              <li>kubelet</li>
+              <li>kube-proxy</li>
+              <li>container runtime</li>
+              <li>Pods</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="card">
